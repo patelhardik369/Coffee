@@ -1,0 +1,925 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ember Roastery — coffee worth waking for</title>
+<meta name="description" content="Single-origin coffee roasted every Tuesday morning, sealed while still warm, on your doorstep within 48 hours. From $24/month. Skip or cancel anytime.">
+<meta property="og:title" content="Ember Roastery — coffee worth waking for">
+<meta property="og:description" content="Roasted Tuesday morning. Sealed while warm. On your doorstep in 48 hours.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ctext x='16' y='24' font-size='24' text-anchor='middle' fill='%23E0A458'%3E%E2%9C%B3%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT,WONK@0,9..144,100..900,0..100,0..1;1,9..144,100..900,0..100,0..1&family=Work+Sans:ital,wght@0,300..600;1,300..600&family=Caveat:wght@400..600&family=JetBrains+Mono:wght@400..700&display=swap" rel="stylesheet">
+<script>document.documentElement.classList.add('js');</script>
+<style>
+  :root {
+    --bg: #171210;          /* deep espresso */
+    --bg2: #1E1712;
+    --line: rgba(240, 227, 204, .10);
+    --line2: rgba(240, 227, 204, .24);
+    --text: #F5ECDC;        /* steamed-milk cream */
+    --muted: #B7A68F;
+    --dim: #8A7B67;
+    --caramel: #E0A458;
+    --terra: #D96C47;       /* burnt orange / cherry */
+    --roastbrown: #A9744A;
+    --cream: #F3E9D7;       /* paper cards */
+    --cream2: #EADDC4;
+    --ink: #241A12;         /* espresso text on cream */
+    --ink-soft: #6B5B49;
+    --disp: 'Fraunces', 'Iowan Old Style', Georgia, serif;
+    --body: 'Work Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+    --hand: 'Caveat', 'Comic Sans MS', cursive;
+    --mono: 'JetBrains Mono', ui-monospace, Menlo, Consolas, monospace;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { color-scheme: dark; scroll-behavior: smooth; }
+  body { background: var(--bg); color: var(--text); font-family: var(--body); font-size: 15.5px;
+    line-height: 1.7; overflow-x: hidden; -webkit-font-smoothing: antialiased; }
+  ::selection { background: var(--caramel); color: var(--ink); }
+  a { color: inherit; }
+  :focus-visible { outline: 2px solid var(--caramel); outline-offset: 3px; border-radius: 3px; }
+  .skip { position: absolute; left: -9999px; top: 12px; z-index: 300; background: var(--caramel); color: var(--ink);
+    padding: 10px 16px; border-radius: 12px; font-weight: 600; text-decoration: none; }
+  .skip:focus-visible { left: 12px; }
+
+  /* FOUC guards — only while JS choreographs */
+  .js [data-hui] { opacity: 0; }
+  .js [data-reveal] { opacity: 0; }
+  .js .kinetic { visibility: hidden; }
+  .js .stamp { opacity: 0; }
+  .js-only { display: none; }
+  html.js .js-only { display: inline-flex; }
+
+  .wrap { width: min(1240px, calc(100vw - clamp(32px, 6vw, 80px))); margin-inline: auto; }
+  .hand { font-family: var(--hand); font-size: clamp(19px, 2vw, 24px); color: var(--caramel);
+    letter-spacing: .01em; font-weight: 500; }
+
+  /* ---------- scroll progress ---------- */
+  .progress { position: fixed; top: 0; left: 0; right: 0; height: 3px; background: var(--caramel);
+    transform: scaleX(0); transform-origin: left; z-index: 140; }
+
+  /* ---------- nav ---------- */
+  nav { position: fixed; inset: 0 0 auto 0; z-index: 120; border-bottom: 1px solid transparent;
+    transition: background-color .25s ease-out, border-color .25s ease-out; }
+  nav.scrolled { background: color-mix(in srgb, var(--bg) 84%, transparent);
+    -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); border-bottom-color: var(--line); }
+  nav .wrap { display: flex; align-items: center; justify-content: space-between; padding-block: 14px; }
+  .logo { display: inline-flex; align-items: baseline; text-decoration: none;
+    font-family: var(--disp); font-weight: 640; font-size: 24px;
+    font-variation-settings: 'SOFT' 80, 'WONK' 1; }
+  .logo i { font-style: normal; color: var(--caramel); margin-left: 2px; display: inline-block; }
+  .logo small { font-family: var(--body); font-size: 10.5px; font-weight: 500; color: var(--dim);
+    letter-spacing: .18em; text-transform: uppercase; margin-left: 10px; }
+  @media (max-width: 480px) { .logo small { display: none; } }
+  .nav-links { display: flex; align-items: center; gap: 26px; font-size: 14px; }
+  .nav-links a:not(.btn) { color: var(--muted); text-decoration: none; transition: color .18s ease-out; }
+  .nav-links a:not(.btn):hover { color: var(--caramel); }
+  @media (max-width: 800px) { html.js .nav-links a:not(.btn) { display: none; } }
+  html:not(.js) .nav-links { flex-wrap: wrap; }
+
+  .menu-btn { align-items: center; gap: 8px; background: transparent; border: 1px solid var(--line2);
+    color: var(--text); font-family: var(--body); font-size: 13px; padding: 10px 16px; border-radius: 999px;
+    cursor: pointer; transition: border-color .18s ease-out, color .18s ease-out; }
+  .menu-btn:hover { border-color: var(--caramel); color: var(--caramel); }
+  @media (min-width: 801px) { html.js .menu-btn { display: none; } }
+  .mnav { position: fixed; inset: 0; z-index: 130; background: color-mix(in srgb, var(--bg) 96%, transparent);
+    -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
+    display: none; flex-direction: column; justify-content: center; padding: 8vh 8vw; }
+  .mnav.open { display: flex; }
+  .mnav a { font-family: var(--disp); font-variation-settings: 'SOFT' 80, 'WONK' 1; font-weight: 620;
+    font-size: clamp(2.4rem, 10vw, 4rem); color: var(--text); text-decoration: none; line-height: 1.35;
+    will-change: transform; }
+  .mnav a:hover { color: var(--caramel); }
+  .mnav a.mini { font-family: var(--body); font-size: 15px; color: var(--caramel); margin-top: 26px; font-weight: 500; }
+  .mnav .close { position: absolute; top: 18px; right: max(4vw, 18px); }
+
+  /* ---------- buttons ---------- */
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 10px; padding: 16px 28px;
+    border-radius: 999px; font-family: var(--body); font-weight: 600; font-size: 15px;
+    text-decoration: none; cursor: pointer; border: 0; will-change: transform;
+    transition: background-color .18s ease-out, border-color .18s ease-out, color .18s ease-out, box-shadow .18s ease-out; }
+  .btn-solid { background: var(--caramel); color: var(--ink); }
+  .btn-solid:hover { background: #EBB068; box-shadow: 0 10px 34px -12px rgba(224, 164, 88, .55); }
+  .btn-ghost { border: 1px solid var(--line2); color: var(--text); background: transparent; }
+  .btn-ghost:hover { border-color: var(--caramel); color: var(--caramel); }
+  .btn-small { padding: 10px 18px; font-size: 13.5px; }
+
+  /* ---------- hero ---------- */
+  .hero { position: relative; min-height: 100svh; display: flex; flex-direction: column;
+    justify-content: space-between; overflow: hidden; padding-top: 78px; }
+  .hero-top { display: flex; justify-content: space-between; align-items: baseline; gap: 20px; padding-top: 16px; }
+  .eyebrow-line { display: inline-flex; align-items: center; gap: 10px; color: var(--muted); font-size: 14px; }
+  .eyebrow-line::before { content: '✳'; color: var(--terra); }
+  .hero-est { rotate: -2deg; }
+  @media (max-width: 760px) { .hero-est { display: none; } }
+  @media (min-width: 901px) {
+    .hero { justify-content: flex-start; gap: clamp(8px, 3vh, 36px); padding-top: 150px; }
+    .hero-top { position: absolute; top: 88px; left: 0; right: 0; }
+    .hero .khold { margin-top: auto; }
+    .hero .uhold { margin-bottom: auto; }
+  }
+  .kinetic { position: relative; }
+
+  .kinetic { font-family: var(--disp); font-variation-settings: 'SOFT' 90, 'WONK' 1; font-weight: 680;
+    line-height: .96; letter-spacing: -0.01em; user-select: none; margin-block: 14px 8px; }
+  .krow { display: block; overflow: hidden; white-space: nowrap;
+    font-size: clamp(2.9rem, min(12.6vw, 13.5svh), 11.4rem);
+    will-change: transform; width: fit-content; padding-bottom: .32em; margin-bottom: -.24em; }
+  .krow .ch { display: inline-block; }
+  .krow .poke { cursor: pointer; }
+  .krow-2 { color: transparent; -webkit-text-stroke: 2px var(--text); margin-left: clamp(22px, 6vw, 130px); }
+  .krow-3 .hl { color: var(--caramel); font-style: italic; font-weight: 620; }
+  .krow-3 .dotend { color: var(--terra); }
+
+  .hero-ui { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, .8fr); gap: 28px;
+    align-items: end; padding-bottom: 24px; }
+  @media (max-width: 900px) { .hero-ui { grid-template-columns: 1fr; gap: 20px; } }
+  .hero-sub { color: var(--muted); max-width: 52ch; font-size: clamp(15px, 1.35vw, 17px); font-weight: 300; }
+  .hero-sub b { color: var(--text); font-weight: 500; }
+  .cta-row { display: flex; gap: 14px; margin-top: 24px; flex-wrap: wrap; }
+  .hero-meta { margin-top: 16px; font-size: 13px; color: var(--dim); }
+  .hero-meta em { font-style: normal; color: var(--terra); margin-inline: 8px; }
+
+  /* next-roast ticket */
+  .ticket { justify-self: end; background: var(--cream); color: var(--ink); border-radius: 16px;
+    padding: 18px 22px 16px; position: relative; min-width: 270px; rotate: 1.5deg;
+    box-shadow: 0 18px 50px -22px rgba(0, 0, 0, .8); will-change: transform; }
+  @media (pointer: fine) and (prefers-reduced-motion: no-preference) {
+    html.js .ticket { cursor: grab; } html.js .ticket:active { cursor: grabbing; } }
+  .ticket::before, .ticket::after { content: ''; position: absolute; top: 50%; width: 18px; height: 18px;
+    border-radius: 50%; background: var(--bg); translate: 0 -50%; }
+  .ticket::before { left: -9px; } .ticket::after { right: -9px; }
+  @media (max-width: 900px) { .ticket { justify-self: start; rotate: -1deg; } }
+  .ticket .lab { display: flex; align-items: center; gap: 8px; font-size: 11.5px; font-weight: 600;
+    letter-spacing: .16em; text-transform: uppercase; color: var(--ink-soft); }
+  .ticket .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--terra); display: inline-block; }
+  .timer-digits { font-family: var(--mono); font-weight: 700; font-size: clamp(24px, 2.4vw, 31px);
+    letter-spacing: .02em; margin-top: 6px; font-variant-numeric: tabular-nums; color: var(--ink); }
+  .timer-digits span { color: #B9A88E; }
+  .ticket .cap { font-size: 11.5px; color: var(--ink-soft); margin-top: 3px; border-top: 1.5px dashed #D8C7AA;
+    padding-top: 8px; margin-top: 10px; }
+
+  /* line-drawn cup + steam */
+  .cup-art { position: absolute; right: clamp(18px, 5vw, 120px); bottom: clamp(180px, 26vh, 300px);
+    width: clamp(200px, 23vw, 400px); cursor: pointer; opacity: .92; }
+  @media (max-width: 900px) { .cup-art { width: clamp(112px, 24vw, 170px); right: 14px;
+    bottom: auto; top: 168px; opacity: .85; } }
+  .cup-art path { fill: none; stroke: var(--text); stroke-width: 2.5; stroke-linecap: round; }
+  .cup-art .steam { stroke: var(--caramel); stroke-width: 2.2; }
+
+  /* ---------- marquee ---------- */
+  .marquee { border-block: 1px solid var(--line); padding-block: 15px; overflow: hidden; position: relative; }
+  .marquee-track { display: flex; width: max-content; white-space: nowrap; will-change: transform; }
+  .marquee-track > div { display: flex; }
+  .marquee span { font-family: var(--disp); font-variation-settings: 'SOFT' 70, 'WONK' 0; font-weight: 500;
+    font-size: 15px; letter-spacing: .04em; color: var(--muted); font-style: italic; }
+  .marquee span::after { content: '✳'; font-style: normal; margin-inline: 22px; }
+  .marquee span:nth-child(odd)::after { color: var(--caramel); }
+  .marquee span:nth-child(even)::after { color: var(--terra); }
+  .marquee .pause { position: absolute; right: 10px; top: 50%; translate: 0 -50%; z-index: 2;
+    background: var(--bg2); color: var(--muted); border: 1px solid var(--line); border-radius: 999px;
+    font-family: var(--body); font-size: 11px; letter-spacing: .06em; padding: 6px 12px; cursor: pointer; }
+  .marquee .pause:hover { color: var(--text); border-color: var(--line2); }
+
+  /* ---------- section scaffolding ---------- */
+  section.block { padding-block: clamp(88px, 11vw, 150px); }
+  .sec-head { display: flex; align-items: baseline; gap: 14px; margin-bottom: 18px; flex-wrap: wrap; }
+  .sec-head .idx { font-family: var(--mono); font-size: 12px; color: var(--ink); background: var(--caramel);
+    padding: 3px 9px; border-radius: 8px; font-weight: 700; rotate: -2deg; display: inline-block; }
+  .sec-head .name { font-size: 13px; letter-spacing: .2em; text-transform: uppercase; color: var(--muted); }
+  .sec-head .rule { flex: 1; height: 1px; background: var(--line); align-self: center; min-width: 60px; }
+  h2.title { font-family: var(--disp); font-variation-settings: 'SOFT' 90, 'WONK' 1; font-weight: 640;
+    line-height: 1.02; font-size: clamp(2.2rem, 5.4vw, 4.2rem); letter-spacing: -0.01em; max-width: 21ch; }
+  h2.title .alt { font-style: italic; color: var(--caramel); font-weight: 600; }
+
+  /* ---------- the journey (sticky scrub story) ---------- */
+  .slog { position: relative; }
+  .slog--live { height: 320vh; }
+  .slog-sticky { padding-block: 88px; position: relative; overflow: hidden; }
+  .slog--live .slog-sticky { position: sticky; top: 0; height: 100svh; display: flex; flex-direction: column;
+    justify-content: center; padding-block: 0; }
+  .slog-grid2 { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: clamp(24px, 5vw, 90px);
+    align-items: center; margin-top: clamp(22px, 4svh, 48px); }
+  .slog--live .slog-stages { min-height: clamp(280px, 40svh, 500px); }
+  @media (max-width: 880px) {
+    .slog-grid2 { grid-template-columns: 1fr; gap: 24px; justify-items: center; margin-top: 18px; }
+    .slog-grid2 .slog-stages { justify-self: stretch; width: 100%; }
+    .slog--live .slog-stages { min-height: clamp(230px, 32svh, 340px); }
+  }
+
+  .slog-stages { position: relative; }
+  .slog--live .slog-stage { position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: center; }
+  .slog-stage { padding-block: 30px 0; }
+  .slog--live .slog-stage { padding-block: 0; }
+  .slog-stage .tag { font-size: 13px; color: var(--muted); }
+  .slog-stage .tag b { font-weight: 600; }
+  .st-1 .tag b { color: var(--terra); }
+  .st-2 .tag b { color: var(--roastbrown); }
+  .st-3 .tag b { color: var(--cream); }
+  .slog-word { font-family: var(--disp); font-variation-settings: 'SOFT' 90, 'WONK' 1; font-weight: 680;
+    line-height: .95; font-size: clamp(3.2rem, min(9.8vw, 14svh), 9.4rem); letter-spacing: -0.01em; margin-block: 6px 12px; }
+  .st-1 .slog-word { color: var(--terra); }
+  .st-2 .slog-word { color: var(--roastbrown); }
+  .st-3 .slog-word { color: var(--cream); }
+  .slog-stage p { color: var(--muted); max-width: 46ch; font-size: 15px; font-weight: 300; }
+
+  /* bean grid */
+  .bgrid { display: grid; grid-template-columns: repeat(12, auto); gap: clamp(6px, 1.1vw, 16px); width: fit-content; }
+  .bgrid i { width: clamp(11px, 1.85vw, 30px); aspect-ratio: .78; border-radius: 50%;
+    background-color: #4A3E30; display: block; will-change: transform; rotate: 24deg; position: relative; }
+  .bgrid i::after { content: ''; position: absolute; left: 50%; top: 12%; bottom: 12%; width: 1.5px;
+    translate: -50% 0; background: rgba(23, 18, 16, .5); border-radius: 2px; }
+
+  .slog-rail { display: flex; align-items: center; gap: 14px; margin-top: clamp(28px, 5svh, 56px); flex-wrap: wrap; }
+  .slog-rail .lbl { font-size: 12.5px; color: var(--dim); }
+  .slog-rail .bar { flex: 1; min-width: 120px; height: 2px; background: var(--line); position: relative; border-radius: 2px; }
+  .slog-rail .bar i { position: absolute; inset: 0; border-radius: 2px;
+    background: linear-gradient(90deg, var(--terra), var(--roastbrown), var(--cream));
+    transform: scaleX(0); transform-origin: left; }
+  .slog-rail .pct { font-family: var(--mono); font-size: 11px; color: var(--dim); }
+  .slog--static .slog-rail { display: none; }
+  .slog-scrollhint { position: absolute; right: clamp(16px, 4vw, 60px); top: 84px; rotate: 3deg; }
+  .slog--static .slog-scrollhint { display: none; }
+  @media (max-width: 880px) { .slog-scrollhint { display: none; } }
+
+  /* ---------- how it works — menu cards ---------- */
+  .pgrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr)); gap: 20px; margin-top: 52px; }
+  .pcard { background: var(--cream); color: var(--ink); border-radius: 22px; padding: 26px;
+    position: relative; overflow: hidden; will-change: transform;
+    transition: translate .2s ease-out, box-shadow .2s ease-out;
+    box-shadow: 0 16px 44px -26px rgba(0, 0, 0, .9); }
+  .pcard:hover { translate: 0 -5px; box-shadow: 0 26px 60px -26px rgba(0, 0, 0, .95); }
+  .pcard .stamp { position: absolute; top: 20px; right: 20px; width: 44px; height: 44px; border-radius: 50%;
+    border: 2px solid var(--terra); color: var(--terra); display: grid; place-items: center;
+    font-family: var(--disp); font-weight: 640; font-size: 17px; line-height: 1; rotate: -6deg;
+    will-change: transform; }
+  .pcard .chip { display: inline-block; font-size: 11.5px; font-weight: 600; letter-spacing: .1em;
+    text-transform: uppercase; color: var(--ink-soft); border: 1.5px dashed #CDBB99;
+    padding: 4px 10px; border-radius: 999px; margin-bottom: 16px; }
+  .demo { height: 108px; border-radius: 14px; background: rgba(36, 26, 18, .05); border: 1.5px dashed #D6C5A6;
+    margin-bottom: 18px; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+  .pcard h3 { font-family: var(--disp); font-variation-settings: 'SOFT' 80, 'WONK' 1; font-weight: 640;
+    font-size: 24px; margin-bottom: 6px; }
+  .pcard p { color: var(--ink-soft); font-size: 14px; line-height: 1.65; }
+
+  /* demo 1 — strength dial cups */
+  .cups { display: flex; align-items: flex-end; gap: 9px; height: 58px; }
+  .cups i { width: 13px; border-radius: 4px 4px 6px 6px; background: var(--caramel); height: 100%;
+    transform-origin: bottom; display: block; will-change: transform; }
+  .cups i:nth-child(2n) { background: var(--roastbrown); }
+  .cups i:nth-child(3n) { background: var(--terra); }
+
+  /* demo 2 — roaster drum */
+  .drum { position: relative; width: 76px; height: 76px; }
+  .drum .shell { position: absolute; inset: 0; border: 2px dashed #B99B6F; border-radius: 50%; will-change: transform; }
+  .drum .shell::after { content: ''; position: absolute; left: 50%; top: -4px; width: 8px; height: 8px;
+    border-radius: 50%; background: var(--terra); translate: -50% 0; }
+  .drum .beanx { position: absolute; left: 50%; top: 50%; width: 14px; height: 18px; margin: -9px 0 0 -7px;
+    border-radius: 50%; background: var(--roastbrown); will-change: transform; }
+  .drum .beanx::after { content: ''; position: absolute; left: 50%; top: 15%; bottom: 15%; width: 1.5px;
+    translate: -50%; background: rgba(36, 26, 18, .5); }
+
+  /* demo 3 — bag to doorstep */
+  .shipway { position: relative; width: 82%; height: 44px; }
+  .shipway .lane { position: absolute; left: 0; right: 0; bottom: 9px; border-bottom: 2px dashed #CDBB99; }
+  .shipway .bag { position: absolute; bottom: 12px; left: 0; width: 22px; height: 24px; will-change: transform;
+    transform-origin: 50% 100%; }
+  .shipway .bag::before { content: ''; position: absolute; inset: 4px 0 0 0; background: var(--roastbrown);
+    border-radius: 4px 4px 6px 6px; }
+  .shipway .bag::after { content: ''; position: absolute; top: 0; left: 3px; right: 3px; height: 6px;
+    background: var(--ink); border-radius: 2px; }
+  .shipway .door { position: absolute; right: 0; bottom: 12px; width: 16px; height: 24px;
+    border: 2px solid var(--ink-soft); border-bottom: 0; border-radius: 8px 8px 0 0; }
+
+  /* ---------- by the numbers ---------- */
+  .stats-band { background: var(--bg2); border-block: 1px solid var(--line); position: relative; overflow: hidden; }
+  .stats { display: grid; grid-template-columns: repeat(3, 1fr); }
+  .stat { padding: clamp(40px, 5vw, 70px) clamp(16px, 3vw, 48px); }
+  .stat + .stat { border-left: 1px solid var(--line); }
+  @media (max-width: 760px) { .stats { grid-template-columns: 1fr; } .stat + .stat { border-left: 0; border-top: 1px solid var(--line); } }
+  .stat b { display: flex; align-items: baseline; gap: 10px; font-family: var(--disp);
+    font-variation-settings: 'SOFT' 90, 'WONK' 1; font-weight: 660;
+    font-size: clamp(3.6rem, 7.2vw, 6.6rem); line-height: 1; letter-spacing: -0.02em; }
+  .stat .suffix { font-family: var(--body); font-size: 13px; font-weight: 600; letter-spacing: .06em;
+    padding: 5px 11px; border-radius: 999px; rotate: -3deg; }
+  .stat:nth-child(1) .suffix { background: var(--caramel); color: var(--ink); }
+  .stat:nth-child(2) .suffix { background: var(--terra); color: var(--cream); }
+  .stat:nth-child(3) .suffix { background: var(--cream); color: var(--ink); }
+  .stat svg.uline { display: block; margin-block: 16px 12px; width: 130px; height: 8px; }
+  .stat svg.uline path { stroke-width: 2.5; fill: none; stroke-linecap: round; }
+  .stat:nth-child(1) svg.uline path { stroke: var(--caramel); }
+  .stat:nth-child(2) svg.uline path { stroke: var(--terra); }
+  .stat:nth-child(3) svg.uline path { stroke: var(--cream); }
+  .stat .lbl { font-size: 14px; color: var(--muted); max-width: 26ch; font-weight: 300; }
+
+  /* ---------- kind words — pinned notes ---------- */
+  .quotes { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr)); gap: 22px; margin-top: 54px; }
+  .quote { will-change: transform; }
+  .quote { perspective: 750px; }
+  .quote-inner { background: var(--cream); color: var(--ink); border-radius: 18px; padding: 30px 26px 24px;
+    position: relative; box-shadow: 0 18px 46px -26px rgba(0, 0, 0, .9); will-change: transform; }
+  html:not(.js) .quote:nth-child(1) .quote-inner { rotate: -1.6deg; }
+  html:not(.js) .quote:nth-child(2) .quote-inner { rotate: 1.4deg; }
+  html:not(.js) .quote:nth-child(3) .quote-inner { rotate: -1deg; }
+  @media (min-width: 900px) { .quote:nth-child(2) { margin-top: 40px; } }
+  .tape { position: absolute; top: -12px; left: 50%; translate: -50% 0; rotate: -4deg; width: 86px; height: 26px;
+    background: rgba(224, 164, 88, .45); border-left: 1px dashed rgba(36,26,18,.2); border-right: 1px dashed rgba(36,26,18,.2); }
+  .quote .stars { color: var(--terra); letter-spacing: 5px; font-size: 15px; margin-bottom: 12px; display: block; }
+  .quote .stars .s { display: inline-block; will-change: transform; }
+  .quote blockquote { font-family: var(--disp); font-variation-settings: 'SOFT' 70, 'WONK' 0; font-weight: 480;
+    font-size: 18.5px; line-height: 1.5; color: var(--ink); }
+  .quote figcaption { margin-top: 16px; font-size: 12px; letter-spacing: .14em; text-transform: uppercase;
+    color: var(--ink-soft); font-weight: 600; }
+  .quote .note { display: block; margin-top: 6px; color: var(--terra); rotate: -1.5deg; font-size: 20px; }
+
+  /* ---------- footer ---------- */
+  footer { border-top: 1px solid var(--line); position: relative; overflow: hidden; }
+  .foot-cta { text-align: center; padding-block: clamp(96px, 13vw, 170px) clamp(76px, 10vw, 130px); position: relative; }
+  .foot-kinetic { font-family: var(--disp); font-variation-settings: 'SOFT' 90, 'WONK' 1; font-weight: 680;
+    line-height: .95; letter-spacing: -0.01em; }
+  .foot-kinetic .krow { margin-inline: auto; font-size: clamp(3rem, 10.4vw, 9.4rem); }
+  .foot-kinetic .krow-2 { margin-left: auto; color: var(--caramel); -webkit-text-stroke: 0; font-style: italic; }
+  .foot-hand { margin-top: 14px; rotate: -2deg; display: inline-block; }
+  .foot-cta .cta-row { justify-content: center; margin-top: 34px; }
+  .foot-note { margin-top: 18px; font-size: 13.5px; color: var(--dim); }
+  .foot-bar { border-top: 1px solid var(--line); padding-block: 24px; display: flex; align-items: center;
+    justify-content: space-between; gap: 16px; flex-wrap: wrap; font-size: 13.5px; color: var(--dim); }
+  .foot-bar .links { display: flex; gap: 22px; flex-wrap: wrap; }
+  .foot-bar a { color: var(--dim); text-decoration: none; transition: color .18s ease-out; }
+  .foot-bar a:hover { color: var(--caramel); }
+  .foot-bar .credit { font-size: 20px; color: var(--caramel); rotate: -2deg; }
+  .foot-bar .credit:hover { color: var(--terra); }
+
+  /* ---------- reduced motion: designed static fallback ---------- */
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    .js [data-hui], .js [data-reveal], .js .stamp { opacity: 1; }
+    .js .kinetic { visibility: visible; }
+    *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+  }
+</style>
+</head>
+<body>
+
+<a class="skip" href="#main">Skip to content</a>
+<div class="progress" aria-hidden="true"></div>
+
+<nav id="nav" data-hui>
+  <div class="wrap">
+    <a class="logo" href="#top">ember<i id="logo-star">✳</i><small>roastery · est. 2024</small></a>
+    <div class="nav-links">
+      <a href="#journey">The journey</a>
+      <a href="#how">How it works</a>
+      <a href="#words">Kind words</a>
+      <button class="menu-btn js-only" id="menu-btn" aria-expanded="false" aria-controls="mnav">menu ↓</button>
+      <a class="btn btn-solid btn-small" href="#start">Subscribe</a>
+    </div>
+  </div>
+</nav>
+
+<div class="mnav" id="mnav" aria-label="Menu">
+  <button class="btn btn-ghost btn-small close" id="menu-close">close ✕</button>
+  <a href="#journey" class="m-link">The journey</a>
+  <a href="#how" class="m-link">How it works</a>
+  <a href="#words" class="m-link">Kind words</a>
+  <a href="#start" class="m-link mini">→ Subscribe, from $24/month</a>
+</div>
+
+<header class="hero" id="top">
+
+  <div class="wrap hero-top">
+    <p class="eyebrow-line" data-hui>Fresh roasts every Tuesday — Portland, OR</p>
+    <span class="hand hero-est" data-hui aria-hidden="true">pouring since 2024 →</span>
+  </div>
+
+  <div class="wrap khold">
+    <h1 class="kinetic" id="kinetic" aria-label="Coffee worth waking for.">
+      <span class="krow krow-1" data-kx="-6">coffee</span>
+      <span class="krow krow-2" data-kx="8">worth</span>
+      <span class="krow krow-3" data-kx="-4"><span class="hl">waking</span>&nbsp;for<span class="dotend">.</span></span>
+    </h1>
+  </div>
+
+  <svg class="cup-art" viewBox="0 0 200 210" aria-hidden="true">
+    <path class="stroke cupline" d="M38 120 h96 v34 a30 30 0 0 1 -30 30 h-36 a30 30 0 0 1 -30 -30 z"/>
+    <path class="stroke cupline" d="M134 128 h14 a16 16 0 0 1 0 32 h-16"/>
+    <path class="stroke cupline" d="M24 200 h124"/>
+    <path class="steam" d="M62 96 c-8 -12 8 -18 0 -32 c-6 -10 4 -16 2 -24"/>
+    <path class="steam" d="M88 98 c-9 -14 9 -20 1 -36 c-7 -11 5 -18 2 -28"/>
+    <path class="steam" d="M114 96 c-8 -12 8 -18 0 -32 c-6 -10 4 -16 2 -24"/>
+  </svg>
+
+  <div class="wrap uhold">
+    <div class="hero-ui">
+      <div>
+        <p class="hero-sub" data-hui>Rare lots from <b>twelve smallholder farms</b>. Roasted every Tuesday
+          morning, sealed while still warm, and on your doorstep within <b>48 hours</b>.
+          Never shelved. Never stale.</p>
+        <div class="cta-row" data-hui>
+          <a class="btn btn-solid" id="cta-main" href="#start">Start your ritual <span aria-hidden="true">→</span></a>
+          <a class="btn btn-ghost" href="#journey">See the journey</a>
+        </div>
+        <p class="hero-meta" data-hui>From $24/month<em>✳</em>Skip anytime<em>✳</em>Free U.S. shipping</p>
+      </div>
+      <div class="ticket" data-hui>
+        <span class="lab"><span class="dot" id="pulse-dot"></span>Next roast</span>
+        <div class="timer-digits" aria-hidden="true"><span id="t-d">00</span><span>d</span> <b id="t-h">00</b><span>h</span> <b id="t-m">00</b><span>m</span> <b id="t-s">00</b><span>s</span></div>
+        <p class="cap">Tuesday · 6:00 am · batch nº147 — Huila, Colombia</p>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="marquee" aria-label="Ember at a glance">
+  <button class="pause" aria-pressed="false" aria-label="Pause ticker">pause</button>
+  <div class="marquee-track" id="track">
+    <div>
+      <span>fresh roasts every tuesday</span><span>sealed while warm</span><span>doorstep in 48 hours</span>
+      <span>single origin, always</span><span>skip or pause anytime</span><span>loved by 2,300 regulars</span>
+    </div>
+    <div aria-hidden="true">
+      <span>fresh roasts every tuesday</span><span>sealed while warm</span><span>doorstep in 48 hours</span>
+      <span>single origin, always</span><span>skip or pause anytime</span><span>loved by 2,300 regulars</span>
+    </div>
+  </div>
+</div>
+
+<main id="main">
+
+  <!-- ================= THE JOURNEY — sticky scrubbed story ================= -->
+  <section class="slog slog--static" id="journey" aria-label="The journey — cherry to cup">
+    <div class="slog-sticky">
+      <span class="hand slog-scrollhint" aria-hidden="true">keep scrolling, slowly ↓</span>
+      <div class="wrap">
+        <div class="sec-head">
+          <span class="idx">01</span><span class="name">The journey</span><span class="rule"></span>
+        </div>
+        <div class="slog-grid2">
+          <div class="slog-stages">
+            <div class="slog-stage st-1" data-stage="1">
+              <p class="tag">Step 1 of 3 — <b>picked ripe</b></p>
+              <div class="slog-word">cherry</div>
+              <p>Coffee is a fruit. Ours is picked ripe across Huila, Sidama and Chiapas —
+                twelve farms we know by name, paid well above fair-trade.</p>
+            </div>
+            <div class="slog-stage st-2" data-stage="2">
+              <p class="tag">Step 2 of 3 — <b>first crack, tuesday 6am</b></p>
+              <div class="slog-word">roast</div>
+              <p>Twelve-kilo batches, profiled by hand and cupped twice before release.
+                A batch that drifts never leaves the roastery.</p>
+            </div>
+            <div class="slog-stage st-3" data-stage="3">
+              <p class="tag">Step 3 of 3 — <b>sealed while warm</b></p>
+              <div class="slog-word">cup</div>
+              <p>Bagged within the hour, shipped the same day, on your doorstep inside 48.
+                Coffee peaks in its first two weeks — you’ll taste it from the first pour.</p>
+            </div>
+          </div>
+          <div class="bgrid" id="dg" aria-hidden="true"></div>
+        </div>
+        <div class="slog-rail" aria-hidden="true">
+          <span class="lbl">cherry</span><span class="lbl">· roast</span><span class="lbl">· cup</span>
+          <div class="bar"><i id="rail-fill"></i></div>
+          <span class="pct" id="rail-pct">0%</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= HOW IT WORKS ================= -->
+  <section class="block" id="how">
+    <div class="wrap">
+      <div class="sec-head" data-reveal>
+        <span class="idx">02</span><span class="name">How it works</span><span class="rule"></span>
+        <span class="hand" aria-hidden="true">easy as one, two, brew</span>
+      </div>
+      <h2 class="title" data-reveal>Three steps. <span class="alt">Zero</span> stale cups.</h2>
+      <div class="pgrid">
+        <div class="pcard" data-reveal>
+          <span class="stamp" aria-hidden="true">1</span>
+          <span class="chip">takes 2 minutes</span>
+          <div class="demo" aria-hidden="true"><div class="cups"><i></i><i></i><i></i><i></i><i></i><i></i></div></div>
+          <h3>Pick your brew</h3>
+          <p>Espresso, filter, or both — tell us how dark you like it and how often you run out.
+            Change it whenever your taste does.</p>
+        </div>
+        <div class="pcard" data-reveal>
+          <span class="stamp" aria-hidden="true">2</span>
+          <span class="chip">roasted tuesdays</span>
+          <div class="demo" aria-hidden="true">
+            <div class="drum"><span class="shell"></span><span class="beanx b1"></span><span class="beanx b2"></span></div>
+          </div>
+          <h3>We fire it to order</h3>
+          <p>Your bag is roasted after you order, never before. Batch number, roast date and
+            farm hand-stamped on every label.</p>
+        </div>
+        <div class="pcard" data-reveal>
+          <span class="stamp" aria-hidden="true">3</span>
+          <span class="chip">at your door in 48h</span>
+          <div class="demo" aria-hidden="true">
+            <div class="shipway"><span class="lane"></span><span class="bag" id="parcel"></span><span class="door"></span></div>
+          </div>
+          <h3>It lands. You brew.</h3>
+          <p>Every two or four weeks — your call. Skip a delivery, pause, or switch roasts
+            in one tap. No calls, no guilt.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= BY THE NUMBERS ================= -->
+  <section class="stats-band" id="numbers" aria-label="Ember by the numbers">
+    <div class="wrap">
+      <div class="stats">
+        <div class="stat">
+          <b><span class="n" data-count="48" data-decimals="0">0</span><span class="suffix">hours</span></b>
+          <svg class="uline" viewBox="0 0 130 8" preserveAspectRatio="none" aria-hidden="true"><path d="M2 5 C 30 2, 60 7, 128 4"/></svg>
+          <span class="lbl">from the roaster’s bench to your first pour</span>
+        </div>
+        <div class="stat">
+          <b><span class="n" data-count="12" data-decimals="0">0</span><span class="suffix">farms</span></b>
+          <svg class="uline" viewBox="0 0 130 8" preserveAspectRatio="none" aria-hidden="true"><path d="M2 4 C 40 7, 80 2, 128 5"/></svg>
+          <span class="lbl">we buy from directly, by name, season after season</span>
+        </div>
+        <div class="stat">
+          <b><span class="n" data-count="4.9" data-decimals="1">0</span><span class="suffix">/ 5</span></b>
+          <svg class="uline" viewBox="0 0 130 8" preserveAspectRatio="none" aria-hidden="true"><path d="M2 5 C 35 3, 70 6, 128 3"/></svg>
+          <span class="lbl">average rating from 2,300+ regulars</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= KIND WORDS ================= -->
+  <section class="block" id="words">
+    <div class="wrap">
+      <div class="sec-head" data-reveal>
+        <span class="idx">03</span><span class="name">Kind words</span><span class="rule"></span>
+      </div>
+      <h2 class="title" data-reveal>The part we <span class="alt">didn’t</span> write.</h2>
+      <div class="quotes">
+        <figure class="quote" data-reveal>
+          <div class="quote-inner">
+            <span class="tape" aria-hidden="true"></span>
+            <span class="stars" aria-label="5 out of 5 stars"><i class="s">★</i><i class="s">★</i><i class="s">★</i><i class="s">★</i><i class="s">★</i></span>
+            <blockquote>I’ve cancelled every other subscription I had. The roast date on the label
+              ruined supermarket coffee for me — permanently.</blockquote>
+            <figcaption>Maya R. — Portland, OR</figcaption>
+            <span class="hand note" aria-hidden="true">my tuesday ritual!</span>
+          </div>
+        </figure>
+        <figure class="quote" data-reveal>
+          <div class="quote-inner">
+            <span class="tape" aria-hidden="true"></span>
+            <span class="stars" aria-label="5 out of 5 stars"><i class="s">★</i><i class="s">★</i><i class="s">★</i><i class="s">★</i><i class="s">★</i></span>
+            <blockquote>The first bag tasted like someone turned the lights on.
+              I didn’t know coffee had this much to say.</blockquote>
+            <figcaption>Daniel K. — Austin, TX</figcaption>
+          </div>
+        </figure>
+        <figure class="quote" data-reveal>
+          <div class="quote-inner">
+            <span class="tape" aria-hidden="true"></span>
+            <span class="stars" aria-label="5 out of 5 stars"><i class="s">★</i><i class="s">★</i><i class="s">★</i><i class="s">★</i><i class="s">★</i></span>
+            <blockquote>It shows up right as I run out. I’ve stopped thinking about
+              coffee entirely — it’s just always good.</blockquote>
+            <figcaption>Priya S. — Brooklyn, NY</figcaption>
+            <span class="hand note" aria-hidden="true">never going back</span>
+          </div>
+        </figure>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- ================= FOOTER ================= -->
+<footer id="start">
+  <div class="wrap foot-cta">
+    <div class="sec-head" data-reveal style="justify-content:center">
+      <span class="idx">04</span><span class="name">No strings — just better mornings</span>
+    </div>
+    <h2 class="foot-kinetic kinetic" id="foot-kinetic" aria-label="Wake up better.">
+      <span class="krow">wake&nbsp;up</span>
+      <span class="krow krow-2">better.</span>
+    </h2>
+    <span class="hand foot-hand" data-reveal aria-hidden="true">your first bag ships next tuesday</span>
+    <div class="cta-row" data-reveal>
+      <a class="btn btn-solid" id="cta-foot" href="#top">Start your ritual — $24/month <span aria-hidden="true">→</span></a>
+    </div>
+    <p class="foot-note" data-reveal>Skip, pause, or cancel anytime. Free shipping, always.</p>
+  </div>
+  <div class="wrap foot-bar">
+    <a class="logo" href="#top" style="font-size:17px">ember<i>✳</i></a>
+    <div class="links">
+      <a href="#journey">The journey</a><a href="#how">How it works</a><a href="#words">Kind words</a>
+    </div>
+    <span>© 2026 Ember Coffee Co. — roasted in Portland, OR</span>
+    <a class="hand credit" href="https://hardikpatel.site" target="_blank" rel="noopener">made by Hardik Patel</a>
+  </div>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/4.5.0/anime.umd.min.js"></script>
+<script>
+/* CDN failed → un-hide everything, page works static */
+if (!window.anime) {
+  document.documentElement.classList.remove('js');
+} else {
+(() => {
+  const { animate, createTimeline, createTimer, stagger, svg, utils, onScroll,
+          createDraggable, createScope, spring, splitText } = anime;
+
+  /* ---------- bean grid DOM (12 × 8) ---------- */
+  const COLS = 12, ROWS = 8;
+  const dgEl = document.getElementById('dg');
+  for (let i = 0; i < COLS * ROWS; i++) dgEl.appendChild(document.createElement('i'));
+
+  /* ---------- nav state ---------- */
+  const nav = document.getElementById('nav');
+  const onScrollNav = () => nav.classList.toggle('scrolled', scrollY > 40);
+  addEventListener('scroll', onScrollNav, { passive: true });
+  onScrollNav();
+
+  /* ---------- mobile menu (works in every mode) ---------- */
+  const mnav = document.getElementById('mnav'), menuBtn = document.getElementById('menu-btn');
+  const mLinks = utils.$('.mnav a');
+  const rmQuery = matchMedia('(prefers-reduced-motion: reduce)');
+  const setMenu = open => {
+    mnav.classList.toggle('open', open);
+    menuBtn.setAttribute('aria-expanded', String(open));
+    document.body.style.overflow = open ? 'hidden' : '';
+    if (open && !rmQuery.matches) {
+      utils.set(mLinks, { opacity: 0, y: 26 });
+      animate(mLinks, { opacity: 1, y: 0, duration: 420, ease: 'out(3)', delay: stagger(60, { start: 40 }) });
+    } else if (open) { utils.set(mLinks, { opacity: 1, y: 0 }); }
+  };
+  menuBtn.addEventListener('click', () => setMenu(!mnav.classList.contains('open')));
+  document.getElementById('menu-close').addEventListener('click', () => setMenu(false));
+  mLinks.forEach(a => a.addEventListener('click', () => setMenu(false)));
+  addEventListener('keydown', e => { if (e.key === 'Escape' && mnav.classList.contains('open')) setMenu(false); });
+
+  /* ---------- roast countdown (content, runs in all modes) ---------- */
+  const pad = n => String(n).padStart(2, '0');
+  const tEl = { d: document.getElementById('t-d'), h: document.getElementById('t-h'),
+                m: document.getElementById('t-m'), s: document.getElementById('t-s') };
+  const nextRoast = () => {
+    const now = new Date(), t = new Date(now);
+    t.setDate(now.getDate() + ((2 - now.getDay() + 7) % 7));
+    t.setHours(6, 0, 0, 0);
+    if (t <= now) t.setDate(t.getDate() + 7);
+    return t;
+  };
+  const renderTimer = () => {
+    let ms = Math.max(0, nextRoast() - Date.now());
+    const d = Math.floor(ms / 864e5); ms -= d * 864e5;
+    const h = Math.floor(ms / 36e5);  ms -= h * 36e5;
+    const m = Math.floor(ms / 6e4);   ms -= m * 6e4;
+    tEl.d.textContent = pad(d); tEl.h.textContent = pad(h);
+    tEl.m.textContent = pad(m); tEl.s.textContent = pad(Math.floor(ms / 1000));
+  };
+  renderTimer();
+  createTimer({ duration: 1000, loop: true, onLoop: renderTimer });
+
+  /* ---------- split kinetic type once, after fonts ---------- */
+  let heroChars = [], footChars = [];
+  const splitReady = document.fonts.ready.then(() => {
+    utils.$('#kinetic .krow').forEach(row => heroChars.push(splitText(row, { chars: true }).chars));
+    utils.$('#foot-kinetic .krow').forEach(row => footChars.push(splitText(row, { chars: true }).chars));
+    heroChars.flat().concat(footChars.flat()).forEach(c => { c.style.display = 'inline-block'; c.style.willChange = 'transform'; });
+  });
+
+  /* ================================================================ */
+  createScope({ mediaQueries: { reduceMotion: '(prefers-reduced-motion)' } }).add(self => {
+    const slog = document.querySelector('.slog');
+
+    /* ---------- REDUCED MOTION: static, finished, readable ---------- */
+    if (self.matches.reduceMotion) {
+      slog.classList.add('slog--static'); slog.classList.remove('slog--live');
+      utils.set('.slog-stage', { opacity: 1, y: 0 });
+      utils.set('#kinetic, #foot-kinetic', { visibility: 'visible' });
+      utils.set('#dg i', { backgroundColor: '#7A4E2C' });
+      utils.$('.quote-inner').forEach((el, i) => utils.set(el, { rotate: [-1.6, 1.4, -1][i % 3] + 'deg' }));
+      document.querySelectorAll('.stat .n').forEach(el =>
+        el.textContent = parseFloat(el.dataset.count).toFixed(+el.dataset.decimals));
+      return;
+    }
+
+    /* ---------- HERO — kinetic char entrance + UI cascade ---------- */
+    splitReady.then(() => {
+      utils.set('#kinetic', { visibility: 'visible' });
+      heroChars.forEach((chars, r) => {
+        utils.set(chars, { y: '115%' });
+        animate(chars, { y: '0%', duration: 850, ease: 'outExpo',
+          delay: stagger(26, { start: 80 + r * 110, from: r === 1 ? 'last' : 'first' }) });
+      });
+      animate('.hero [data-hui]', { y: [16, 0], opacity: [0, 1], duration: 560, ease: 'out(3)',
+        delay: stagger(90, { start: 420 }) });
+      animate('#nav', { y: [-12, 0], opacity: [0, 1], duration: 560, ease: 'out(3)', delay: 600 });
+
+      /* the toy: every headline letter springs when you poke it (hover or tap) */
+      const poke = ch => {
+        ch.classList.add('poke');
+        const springUp = () => {
+          if (rmQuery.matches) return;
+          animate(ch, { y: [{ to: '-16%', duration: 130, ease: 'out(2)' },
+                            { to: '0%', duration: 640, ease: 'outElastic(1, .36)' }] });
+        };
+        ch.addEventListener('pointerenter', springUp);
+        ch.addEventListener('pointerdown', springUp);
+      };
+      heroChars.flat().forEach(poke);
+      footChars.flat().forEach(poke);
+
+      /* footer kinetic — same grammar, once on approach */
+      utils.set('#foot-kinetic', { visibility: 'visible' });
+      footChars.forEach((chars, r) => {
+        utils.set(chars, { y: '115%' });
+        animate(chars, { y: '0%', duration: 800, ease: 'outExpo',
+          delay: stagger(22, { start: r * 120, from: r ? 'last' : 'first' }),
+          autoplay: onScroll({ target: '.foot-cta', enter: '82% top', sync: 'play' }) });
+      });
+    });
+
+    /* ---------- cup: body draws once, steam breathes forever, wobbles on tap ---------- */
+    animate(svg.createDrawable('.cup-art .cupline'), { draw: ['0 0', '0 1'], duration: 1100,
+      ease: 'inOutQuad', delay: stagger(160, { start: 350 }) });
+    const steam = animate(svg.createDrawable('.cup-art .steam'), { draw: ['0 0', '0 1'], duration: 2100,
+      ease: 'inOutSine', alternate: true, loop: true, delay: stagger(280) });
+    const cupSvg = document.querySelector('.cup-art');
+    cupSvg.addEventListener('pointerdown', () => {
+      if (rmQuery.matches) return;
+      animate(cupSvg, { rotate: [{ to: -5, duration: 90 }, { to: 4, duration: 140 },
+                                 { to: 0, duration: 460, ease: 'outElastic(1, .5)' }] });
+      animate('.cup-art .steam', { opacity: [{ to: 0.25, duration: 70 }, { to: 1, duration: 420 }] });
+    });
+
+    /* ---------- kinetic rows shear apart on scroll ---------- */
+    utils.$('#kinetic .krow').forEach(row => {
+      animate(row, { x: row.dataset.kx + 'vw', ease: 'linear',
+        autoplay: onScroll({ target: '.hero', enter: 'top top', leave: 'top bottom', sync: true }) });
+    });
+
+    /* ---------- page scroll progress ---------- */
+    animate('.progress', { scaleX: [0, 1], ease: 'linear',
+      autoplay: onScroll({ target: document.body, enter: 'top top', leave: 'bottom bottom', sync: true }) });
+
+    /* ---------- THE JOURNEY — sticky scrubbed timeline ---------- */
+    slog.classList.remove('slog--static'); slog.classList.add('slog--live');
+    const stages = utils.$('.slog-stage');
+    utils.set([stages[1], stages[2]], { opacity: 0, y: 44 });
+    const dots = utils.$('#dg i');
+    const railPct = document.getElementById('rail-pct');
+    const CH = 1000, ripple = color => ({ scale: [{ to: 1.35, duration: 240 }, { to: 1, duration: 260 }],
+      backgroundColor: { to: color, duration: 460 } });
+
+    createTimeline({ defaults: { ease: 'inOut(2)' },
+      autoplay: onScroll({ target: '.slog', enter: 'top top', leave: 'bottom bottom', sync: 0.35,
+        onUpdate: s => { railPct.textContent = Math.round(s.progress * 100) + '%'; } }) })
+      .add('#rail-fill', { scaleX: [0, 1], ease: 'linear', duration: 3 * CH }, 0)
+      .add(dots, ripple('#C94F35'), stagger(5, { grid: [COLS, ROWS], from: 'center', start: 0 }))
+      .add(stages[0], { opacity: [1, 0], y: [0, -44], duration: 260 }, CH - 120)
+      .add(stages[1], { opacity: [0, 1], y: [44, 0], duration: 300 }, CH + 60)
+      .add(dots, ripple('#7A4E2C'), stagger(5, { grid: [COLS, ROWS], from: 'center', start: CH + 100 }))
+      .add(stages[1], { opacity: [1, 0], y: [0, -44], duration: 260 }, 2 * CH - 120)
+      .add(stages[2], { opacity: [0, 1], y: [44, 0], duration: 300 }, 2 * CH + 60)
+      .add(dots, ripple('#EFE3CC'), stagger(5, { grid: [COLS, ROWS], from: 'center', start: 2 * CH + 100 }));
+
+    /* ---------- generic reveals (once, ~88%) ---------- */
+    utils.$('[data-reveal]:not(.pcard):not(.quote)').forEach(el => {
+      animate(el, { y: [22, 0], opacity: [0, 1], duration: 520, ease: 'out(3)',
+        autoplay: onScroll({ target: el, enter: '88% top', sync: 'play' }) });
+    });
+
+    /* ---------- menu cards + notes — staggered in, stamps thunk ---------- */
+    animate('.pcard', { y: [34, 0], opacity: [0, 1], duration: 620, ease: 'outExpo', delay: stagger(110),
+      autoplay: onScroll({ target: '.pgrid', enter: '86% top', sync: 'play' }) });
+    animate('.stamp', { opacity: [0, 0.95], scale: [1.9, 1], rotate: ['-28deg', '-6deg'],
+      duration: 480, ease: 'outBack(2.4)', delay: stagger(130, { start: 380 }),
+      autoplay: onScroll({ target: '.pgrid', enter: '86% top', sync: 'play' }) });
+    animate('.quote', { y: [30, 0], opacity: [0, 1], duration: 620, ease: 'outExpo', delay: stagger(120),
+      autoplay: onScroll({ target: '.quotes', enter: '86% top', sync: 'play' }) });
+    utils.$('.quote').forEach(q => {
+      animate(q.querySelectorAll('.stars .s'), { scale: [0.3, 1], rotate: ['-35deg', '0deg'],
+        duration: 480, ease: 'outBack(2.2)', delay: stagger(70, { start: 260 }),
+        autoplay: onScroll({ target: q, enter: '86% top', sync: 'play' }) });
+    });
+
+    /* pinned-note hover: card straightens, lifts and tilts toward your cursor in 3D */
+    utils.$('.quote-inner').forEach((el, i) => utils.set(el, { rotate: [-1.6, 1.4, -1][i % 3] + 'deg' }));
+    if (matchMedia('(pointer: fine)').matches) {
+      utils.$('.quote').forEach((q, i) => {
+        const inner = q.querySelector('.quote-inner');
+        const base = [-1.6, 1.4, -1][i % 3];
+        q.addEventListener('pointerenter', () => {
+          if (rmQuery.matches) return;
+          animate(inner, { rotate: 0, scale: 1.04, duration: 340, ease: 'out(3)' });
+          animate(q.querySelectorAll('.stars .s'), {
+            y: [{ to: -7, duration: 120, ease: 'out(2)' }, { to: 0, duration: 420, ease: 'outBack(3)' }],
+            delay: stagger(45) });
+        });
+        q.addEventListener('pointermove', e => {
+          if (rmQuery.matches) return;
+          const r = q.getBoundingClientRect();
+          const rx = ((e.clientY - r.top) / r.height - 0.5) * -9;
+          const ry = ((e.clientX - r.left) / r.width - 0.5) * 11;
+          animate(inner, { rotateX: rx + 'deg', rotateY: ry + 'deg', duration: 190, ease: 'out(2)' });
+        });
+        q.addEventListener('pointerleave', () => {
+          animate(inner, { rotate: base + 'deg', rotateX: '0deg', rotateY: '0deg', scale: 1,
+            duration: 620, ease: 'outElastic(1, .55)' });
+        });
+      });
+    }
+
+    /* the next-roast ticket is quietly draggable — pick it up, toss it, it springs */
+    if (matchMedia('(pointer: fine)').matches) {
+      createDraggable('.ticket', { container: '.hero', containerFriction: 0.5,
+        releaseEase: spring({ bounce: 0.4 }) });
+    }
+
+    /* ---------- numbers — counters + hand-drawn underlines ---------- */
+    document.querySelectorAll('.stat .n').forEach(el => {
+      const target = parseFloat(el.dataset.count), dec = +el.dataset.decimals, o = { v: 0 };
+      animate(o, { v: target, duration: 1500, ease: 'out(4)',
+        onUpdate: () => el.textContent = o.v.toFixed(dec),
+        autoplay: onScroll({ target: '.stats', enter: '82% top', sync: 'play' }) });
+    });
+    animate(svg.createDrawable('.stat .uline path'), { draw: ['0 0', '0 1'], duration: 850,
+      ease: 'outQuart', delay: stagger(140),
+      autoplay: onScroll({ target: '.stats', enter: '82% top', sync: 'play' }) });
+
+    /* ---------- live micro-demos (paused offscreen) ---------- */
+    const cupsAnim = animate('.cups i', { scaleY: [0.25, 1], duration: 750, ease: 'inOutSine',
+      alternate: true, loop: true, delay: stagger(100, { from: 'center' }) });
+    const drum = animate('.drum .shell', { rotate: '360deg', duration: 4200, ease: 'linear', loop: true });
+    const beanTumble1 = animate('.drum .b1', { x: [-14, 12], y: [8, -10], rotate: ['-40deg', '50deg'],
+      duration: 1150, ease: 'inOutSine', alternate: true, loop: true });
+    const beanTumble2 = animate('.drum .b2', { x: [10, -12], y: [-6, 10], rotate: ['30deg', '-45deg'],
+      duration: 1350, ease: 'inOutSine', alternate: true, loop: true });
+    const marquee = animate('#track', { x: '-50%', duration: 32000, ease: 'linear', loop: true });
+    const logoStar = animate('#logo-star', { rotate: '360deg', duration: 16000, ease: 'linear', loop: true });
+    const pulse = animate('#pulse-dot', { opacity: [1, 0.3], duration: 850, ease: 'inOutSine', alternate: true, loop: true });
+
+    /* demo loops registry — bag hop is rebuilt on resize, so its slot is mutable */
+    const pgridEl = document.querySelector('.pgrid');
+    const pgridLoops = [cupsAnim, drum, beanTumble1, beanTumble2];
+    const visibleZones = new Set();
+    const demoMap = new Map([
+      [pgridEl, pgridLoops],
+      [document.querySelector('.marquee'), [marquee]],
+      [document.querySelector('.hero'), [pulse, steam]],
+    ]);
+    const io = new IntersectionObserver(entries => entries.forEach(e => {
+      e.isIntersecting ? visibleZones.add(e.target) : visibleZones.delete(e.target);
+      (demoMap.get(e.target) || []).forEach(a => a && (e.isIntersecting ? a.play() : a.pause()));
+    }), { threshold: 0.05 });
+    demoMap.forEach((_, el) => io.observe(el));
+
+    /* bag hops all the way to the door — exact pixels, rebuilt whenever the lane resizes */
+    const bagEl = document.getElementById('parcel');
+    const laneEl = bagEl.parentElement, doorEl = laneEl.querySelector('.door');
+    let bagAnim = null;
+    const buildBagHop = () => {
+      const i = pgridLoops.indexOf(bagAnim);
+      if (i > -1) pgridLoops.splice(i, 1);
+      if (bagAnim) bagAnim.cancel();
+      utils.set(bagEl, { x: 0, scaleY: 1 });
+      const end = Math.max(40, laneEl.clientWidth - bagEl.offsetWidth - doorEl.offsetWidth + 4);
+      bagAnim = animate(bagEl, {
+        x: [{ to: end * 0.55, duration: 620, ease: 'outBack(1.5)' },
+            { to: end, duration: 560, delay: 320, ease: 'outBack(1.5)' }],
+        scaleY: [{ to: 1, duration: 1400 }, { to: 0.82, duration: 100 },
+                 { to: 1, duration: 300, ease: 'outBack(3)' }],   /* little landing squash at the door */
+        loop: true, loopDelay: 1500 });
+      pgridLoops.push(bagAnim);
+      if (!visibleZones.has(pgridEl)) bagAnim.pause();
+    };
+    let laneW = 0;
+    new ResizeObserver(entries => {
+      const w = Math.round(entries[0].contentRect.width);
+      if (w !== laneW) { laneW = w; buildBagHop(); }
+    }).observe(laneEl);
+
+    /* marquee: pause control + hover */
+    const mqWrap = document.querySelector('.marquee'), pauseBtn = mqWrap.querySelector('.pause');
+    let userPaused = false;
+    mqWrap.addEventListener('mouseenter', () => marquee.pause());
+    mqWrap.addEventListener('mouseleave', () => { if (!userPaused) marquee.play(); });
+    pauseBtn.addEventListener('click', () => {
+      userPaused = !userPaused;
+      userPaused ? marquee.pause() : marquee.play();
+      pauseBtn.textContent = userPaused ? 'play' : 'pause';
+      pauseBtn.setAttribute('aria-pressed', String(userPaused));
+    });
+
+    /* ---------- elastic press on every button ---------- */
+    utils.$('.btn').forEach(btn => btn.addEventListener('click', () =>
+      animate(btn, { scale: [{ to: 0.93, duration: 90 }, { to: 1, duration: 480, ease: 'outElastic(1, .45)' }] })));
+  });
+})();
+}
+</script>
+</body>
+</html>
