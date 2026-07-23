@@ -52,7 +52,8 @@
   .js-only { display: none; }
   html.js .js-only { display: inline-flex; }
 
-  .wrap { width: min(1240px, calc(100vw - clamp(32px, 6vw, 80px))); margin-inline: auto; }
+  /* 100% (not 100vw) — 100vw includes the scrollbar, which shaved the right gutter */
+  .wrap { width: min(1240px, calc(100% - clamp(32px, 6vw, 80px))); margin-inline: auto; }
   .hand { font-family: var(--hand); font-size: clamp(19px, 2vw, 24px); color: var(--caramel);
     letter-spacing: .01em; font-weight: 500; }
 
@@ -118,18 +119,12 @@
   .eyebrow-line { display: inline-flex; align-items: center; gap: 10px; color: var(--muted); font-size: 14px; }
   .eyebrow-line::before { content: '✳'; color: var(--terra); }
   .hero-est { rotate: -2deg; }
-  @media (max-width: 760px) { .hero-est { display: none; } }
+  @media (max-width: 900px) { .hero-est { display: none; } }   /* aside belongs in the desktop corner only */
   @media (min-width: 901px) {
-    .hero { justify-content: flex-start; gap: clamp(8px, 3vh, 36px); padding-top: 150px; }
+    .hero { justify-content: flex-start; gap: clamp(8px, 2.4vh, 30px); padding-top: 150px; }
     .hero-top { position: absolute; top: 88px; left: 0; right: 0; }
     .hero .khold { margin-top: auto; }
     .hero .uhold { margin-bottom: auto; }
-  }
-  /* small screens: everything stacks in reading order, nothing overlaps */
-  @media (max-width: 900px) {
-    .hero { min-height: auto; justify-content: flex-start; gap: 4px;
-      padding-top: 84px; padding-bottom: clamp(36px, 6vh, 60px); }
-    .hero .khold { margin-top: clamp(10px, 2.5vh, 26px); }
   }
   .kinetic { position: relative; }
 
@@ -146,15 +141,9 @@
 
   .hero-ui { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, .8fr); gap: 28px;
     align-items: end; padding-bottom: 24px; }
-  @media (max-width: 900px) { .hero-ui { grid-template-columns: 1fr; gap: 22px; padding-bottom: 0;
-    margin-top: 22px; } }
   .hero-sub { color: var(--muted); max-width: 52ch; font-size: clamp(15px, 1.35vw, 17px); font-weight: 300; }
   .hero-sub b { color: var(--text); font-weight: 500; }
   .cta-row { display: flex; gap: 14px; margin-top: 24px; flex-wrap: wrap; }
-  @media (max-width: 560px) {
-    .cta-row { flex-direction: column; align-items: stretch; gap: 10px; margin-top: 20px; }
-    .cta-row .btn { width: 100%; padding-inline: 20px; }
-  }
   .hero-meta { margin-top: 16px; font-size: 13px; color: var(--dim); }
   .hero-meta em { font-style: normal; color: var(--terra); margin-inline: 8px; }
 
@@ -167,7 +156,6 @@
   .ticket::before, .ticket::after { content: ''; position: absolute; top: 50%; width: 18px; height: 18px;
     border-radius: 50%; background: var(--bg); translate: 0 -50%; }
   .ticket::before { left: -9px; } .ticket::after { right: -9px; }
-  @media (max-width: 900px) { .ticket { justify-self: stretch; width: 100%; min-width: 0; rotate: -1deg; } }
   .ticket .lab { display: flex; align-items: center; gap: 8px; font-size: 11.5px; font-weight: 600;
     letter-spacing: .16em; text-transform: uppercase; color: var(--ink-soft); }
   .ticket .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--terra); display: inline-block; }
@@ -177,28 +165,53 @@
   .ticket .cap { font-size: 11.5px; color: var(--ink-soft); margin-top: 3px; border-top: 1.5px dashed #D8C7AA;
     padding-top: 8px; margin-top: 10px; }
 
-  /* line-drawn cup + steam */
-  .cup-art { position: absolute; right: clamp(18px, 5vw, 120px); bottom: clamp(180px, 26vh, 300px);
-    width: clamp(200px, 23vw, 400px); cursor: pointer; opacity: .92; }
-  /* on small screens the cup joins the flow instead of floating over the headline */
-  @media (max-width: 900px) { .cup-art { position: static; display: block; opacity: .88;
-    width: clamp(96px, 25vw, 150px); margin: 8px 2px -6px auto; } }
+  /* line-drawn cup + steam — .cup-hold is a .wrap, so the cup hangs off the SAME
+     right gutter as the ticket and the headline's left edge: symmetric margins at any width */
+  .cup-hold { position: absolute; inset-block: 0; left: 0; right: 0; pointer-events: none; }
+  .cup-art { position: absolute; right: 0; bottom: max(252px, 25vh);
+    width: clamp(170px, min(20vw, 34vh), 330px); height: auto; display: block;
+    pointer-events: auto; cursor: pointer; opacity: .92; }
   .cup-art path { fill: none; stroke: var(--text); stroke-width: 2.5; stroke-linecap: round; }
   .cup-art .steam { stroke: var(--caramel); stroke-width: 2.2; }
 
+  /* ---------- hero on tablets & phones: one centred column, nothing overlapping ---------- */
+  @media (max-width: 900px) {
+    .hero { min-height: auto; justify-content: flex-start; gap: 0; text-align: center;
+      padding-top: clamp(78px, 12vh, 100px); padding-bottom: clamp(36px, 6vh, 60px); }
+    .hero-top { justify-content: center; padding-top: 0; }
+    .hero .khold { margin-top: clamp(12px, 2.4vh, 26px); }
+    .kinetic { margin-block: 0; }
+    .krow, .krow-2 { margin-inline: auto; }            /* rows centre instead of stair-stepping */
+    .cup-hold { position: static; pointer-events: auto; }
+    .cup-art { position: static; width: clamp(92px, 24vw, 150px); opacity: .9;
+      margin: clamp(10px, 2vh, 22px) auto 0; }
+    .hero-ui { grid-template-columns: 1fr; gap: clamp(20px, 3.4vh, 30px); padding-bottom: 0;
+      margin-top: clamp(18px, 3vh, 30px); justify-items: center; }
+    .hero-sub { margin-inline: auto; max-width: 46ch; }
+    .cta-row { justify-content: center; margin-top: 22px; }
+    .ticket { justify-self: center; width: 100%; max-width: 380px; min-width: 0;
+      rotate: -1deg; text-align: center; }
+    .ticket .lab { justify-content: center; }
+  }
+  @media (max-width: 560px) {
+    .cta-row { flex-direction: column; align-items: stretch; gap: 10px;
+      width: 100%; max-width: 340px; margin-inline: auto; }
+    .cta-row .btn { width: 100%; padding-inline: 20px; }
+  }
+
   /* ---------- marquee ---------- */
   .marquee { border-block: 1px solid var(--line); padding-block: 15px; overflow: hidden; position: relative; }
-  .marquee-track { display: flex; width: max-content; white-space: nowrap; will-change: transform; }
-  .marquee-track > div { display: flex; }
+  /* one uninterrupted CSS loop — the two identical halves make -50% a seamless wrap */
+  .marquee-track { display: flex; width: max-content; white-space: nowrap; will-change: transform;
+    animation: marquee-slide 34s linear infinite; }
+  @keyframes marquee-slide { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+  /* min-width keeps two copies ≥ one viewport even on ultra-wide screens */
+  .marquee-track > div { display: flex; min-width: 50vw; justify-content: space-around; }
   .marquee span { font-family: var(--disp); font-variation-settings: 'SOFT' 70, 'WONK' 0; font-weight: 500;
     font-size: 15px; letter-spacing: .04em; color: var(--muted); font-style: italic; }
   .marquee span::after { content: '✳'; font-style: normal; margin-inline: 22px; }
   .marquee span:nth-child(odd)::after { color: var(--caramel); }
   .marquee span:nth-child(even)::after { color: var(--terra); }
-  .marquee .pause { position: absolute; right: 10px; top: 50%; translate: 0 -50%; z-index: 2;
-    background: var(--bg2); color: var(--muted); border: 1px solid var(--line); border-radius: 999px;
-    font-family: var(--body); font-size: 11px; letter-spacing: .06em; padding: 6px 12px; cursor: pointer; }
-  .marquee .pause:hover { color: var(--text); border-color: var(--line2); }
 
   /* ---------- section scaffolding ---------- */
   section.block { padding-block: clamp(88px, 11vw, 150px); }
@@ -375,6 +388,7 @@
     .js [data-hui], .js [data-reveal], .js .stamp { opacity: 1; }
     .js .kinetic { visibility: visible; }
     *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+    .marquee-track { animation: none !important; transform: none !important; }
   }
 </style>
 </head>
@@ -419,14 +433,17 @@
     </h1>
   </div>
 
-  <svg class="cup-art" viewBox="0 0 200 210" aria-hidden="true">
-    <path class="stroke cupline" d="M38 120 h96 v34 a30 30 0 0 1 -30 30 h-36 a30 30 0 0 1 -30 -30 z"/>
-    <path class="stroke cupline" d="M134 128 h14 a16 16 0 0 1 0 32 h-16"/>
-    <path class="stroke cupline" d="M24 200 h124"/>
-    <path class="steam" d="M62 96 c-8 -12 8 -18 0 -32 c-6 -10 4 -16 2 -24"/>
-    <path class="steam" d="M88 98 c-9 -14 9 -20 1 -36 c-7 -11 5 -18 2 -28"/>
-    <path class="steam" d="M114 96 c-8 -12 8 -18 0 -32 c-6 -10 4 -16 2 -24"/>
-  </svg>
+  <div class="wrap cup-hold" aria-hidden="true">
+    <!-- viewBox is cropped to the artwork itself, so the box has no dead space around it -->
+    <svg class="cup-art" viewBox="20 30 148 176">
+      <path class="stroke cupline" d="M38 120 h96 v34 a30 30 0 0 1 -30 30 h-36 a30 30 0 0 1 -30 -30 z"/>
+      <path class="stroke cupline" d="M134 128 h14 a16 16 0 0 1 0 32 h-16"/>
+      <path class="stroke cupline" d="M24 200 h124"/>
+      <path class="steam" d="M62 96 c-8 -12 8 -18 0 -32 c-6 -10 4 -16 2 -24"/>
+      <path class="steam" d="M88 98 c-9 -14 9 -20 1 -36 c-7 -11 5 -18 2 -28"/>
+      <path class="steam" d="M114 96 c-8 -12 8 -18 0 -32 c-6 -10 4 -16 2 -24"/>
+    </svg>
+  </div>
 
   <div class="wrap uhold">
     <div class="hero-ui">
@@ -442,17 +459,26 @@
       </div>
       <div class="ticket" data-hui>
         <span class="lab"><span class="dot" id="pulse-dot"></span>Next roast</span>
-        <div class="timer-digits" aria-hidden="true"><span id="t-d">00</span><span>d</span> <b id="t-h">00</b><span>h</span> <b id="t-m">00</b><span>m</span> <b id="t-s">00</b><span>s</span></div>
-        <p class="cap">Tuesday · 6:00 am · batch nº147 — Huila, Colombia</p>
+        <div class="timer-digits" aria-hidden="true"><b id="t-d">00</b><span>d</span> <b id="t-h">00</b><span>h</span> <b id="t-m">00</b><span>m</span> <b id="t-s">00</b><span>s</span></div>
+        <p class="cap">Tuesday · 6:00 am · batch no 147 — Huila, Colombia</p>
       </div>
     </div>
   </div>
 </header>
 
 <div class="marquee" aria-label="Ember at a glance">
-  <button class="pause" aria-pressed="false" aria-label="Pause ticker">pause</button>
   <div class="marquee-track" id="track">
     <div>
+      <span>fresh roasts every tuesday</span><span>sealed while warm</span><span>doorstep in 48 hours</span>
+      <span>single origin, always</span><span>skip or pause anytime</span><span>loved by 2,300 regulars</span>
+    </div>
+    <div aria-hidden="true">
+      <span>fresh roasts every tuesday</span><span>sealed while warm</span><span>doorstep in 48 hours</span>
+      <span>single origin, always</span><span>skip or pause anytime</span><span>loved by 2,300 regulars</span>
+    </div>
+    <!-- four copies: the animation travels -50% (= two copies), so the trailing half
+         always still covers the viewport — no blank gap at the end of a cycle -->
+    <div aria-hidden="true">
       <span>fresh roasts every tuesday</span><span>sealed while warm</span><span>doorstep in 48 hours</span>
       <span>single origin, always</span><span>skip or pause anytime</span><span>loved by 2,300 regulars</span>
     </div>
@@ -875,7 +901,6 @@ if (!window.anime) {
       duration: 1150, ease: 'inOutSine', alternate: true, loop: true });
     const beanTumble2 = animate('.drum .b2', { x: [10, -12], y: [-6, 10], rotate: ['30deg', '-45deg'],
       duration: 1350, ease: 'inOutSine', alternate: true, loop: true });
-    const marquee = animate('#track', { x: '-50%', duration: 32000, ease: 'linear', loop: true });
     const logoBean = animate('#logo-bean', { rotate: '360deg', duration: 14000, ease: 'linear', loop: true });
     const pulse = animate('#pulse-dot', { opacity: [1, 0.3], duration: 850, ease: 'inOutSine', alternate: true, loop: true });
 
@@ -885,7 +910,6 @@ if (!window.anime) {
     const visibleZones = new Set();
     const demoMap = new Map([
       [pgridEl, pgridLoops],
-      [document.querySelector('.marquee'), [marquee]],
       [document.querySelector('.hero'), [pulse, steam]],
     ]);
     const io = new IntersectionObserver(entries => entries.forEach(e => {
@@ -918,18 +942,6 @@ if (!window.anime) {
       const w = Math.round(entries[0].contentRect.width);
       if (w !== laneW) { laneW = w; buildBagHop(); }
     }).observe(laneEl);
-
-    /* marquee: pause control + hover */
-    const mqWrap = document.querySelector('.marquee'), pauseBtn = mqWrap.querySelector('.pause');
-    let userPaused = false;
-    mqWrap.addEventListener('mouseenter', () => marquee.pause());
-    mqWrap.addEventListener('mouseleave', () => { if (!userPaused) marquee.play(); });
-    pauseBtn.addEventListener('click', () => {
-      userPaused = !userPaused;
-      userPaused ? marquee.pause() : marquee.play();
-      pauseBtn.textContent = userPaused ? 'play' : 'pause';
-      pauseBtn.setAttribute('aria-pressed', String(userPaused));
-    });
 
     /* ---------- elastic press on every button ---------- */
     utils.$('.btn').forEach(btn => btn.addEventListener('click', () =>
