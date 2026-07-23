@@ -7,7 +7,7 @@
 <meta name="description" content="Single-origin coffee roasted every Tuesday morning, sealed while still warm, on your doorstep within 48 hours. From $24/month. Skip or cancel anytime.">
 <meta property="og:title" content="Ember Roastery — coffee worth waking for">
 <meta property="og:description" content="Roasted Tuesday morning. Sealed while warm. On your doorstep in 48 hours.">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ctext x='16' y='24' font-size='24' text-anchor='middle' fill='%23E0A458'%3E%E2%9C%B3%3C/text%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cellipse cx='16' cy='16' rx='9.2' ry='12.6' fill='%23E0A458'/%3E%3Cpath d='M16 4.4C11.2 9.9 20.8 16.1 16 27.6' fill='none' stroke='%23171210' stroke-width='2.8' stroke-linecap='round'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT,WONK@0,9..144,100..900,0..100,0..1;1,9..144,100..900,0..100,0..1&family=Work+Sans:ital,wght@0,300..600;1,300..600&family=Caveat:wght@400..600&family=JetBrains+Mono:wght@400..700&display=swap" rel="stylesheet">
@@ -69,7 +69,12 @@
   .logo { display: inline-flex; align-items: baseline; text-decoration: none;
     font-family: var(--disp); font-weight: 640; font-size: 24px;
     font-variation-settings: 'SOFT' 80, 'WONK' 1; }
-  .logo i { font-style: normal; color: var(--caramel); margin-left: 2px; display: inline-block; }
+  .logo i { font-style: normal; color: var(--caramel); display: inline-block;
+    width: .58em; height: .8em; margin-left: .22em; align-self: center; translate: 0 1px;
+    will-change: transform; }
+  .logo i svg { display: block; width: 100%; height: 100%; overflow: visible; }
+  .logo i .body { fill: currentColor; }
+  .logo i .crease { fill: none; stroke: var(--bg); stroke-width: 2.8; stroke-linecap: round; }
   .logo small { font-family: var(--body); font-size: 10.5px; font-weight: 500; color: var(--dim);
     letter-spacing: .18em; text-transform: uppercase; margin-left: 10px; }
   @media (max-width: 480px) { .logo small { display: none; } }
@@ -79,7 +84,7 @@
   @media (max-width: 800px) { html.js .nav-links a:not(.btn) { display: none; } }
   html:not(.js) .nav-links { flex-wrap: wrap; }
 
-  .menu-btn { align-items: center; gap: 8px; background: transparent; border: 1px solid var(--line2);
+  .menu-btn { align-items: center; gap: 8px; white-space: nowrap; background: transparent; border: 1px solid var(--line2);
     color: var(--text); font-family: var(--body); font-size: 13px; padding: 10px 16px; border-radius: 999px;
     cursor: pointer; transition: border-color .18s ease-out, color .18s ease-out; }
   .menu-btn:hover { border-color: var(--caramel); color: var(--caramel); }
@@ -120,6 +125,12 @@
     .hero .khold { margin-top: auto; }
     .hero .uhold { margin-bottom: auto; }
   }
+  /* small screens: everything stacks in reading order, nothing overlaps */
+  @media (max-width: 900px) {
+    .hero { min-height: auto; justify-content: flex-start; gap: 4px;
+      padding-top: 84px; padding-bottom: clamp(36px, 6vh, 60px); }
+    .hero .khold { margin-top: clamp(10px, 2.5vh, 26px); }
+  }
   .kinetic { position: relative; }
 
   .kinetic { font-family: var(--disp); font-variation-settings: 'SOFT' 90, 'WONK' 1; font-weight: 680;
@@ -135,10 +146,15 @@
 
   .hero-ui { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, .8fr); gap: 28px;
     align-items: end; padding-bottom: 24px; }
-  @media (max-width: 900px) { .hero-ui { grid-template-columns: 1fr; gap: 20px; } }
+  @media (max-width: 900px) { .hero-ui { grid-template-columns: 1fr; gap: 22px; padding-bottom: 0;
+    margin-top: 22px; } }
   .hero-sub { color: var(--muted); max-width: 52ch; font-size: clamp(15px, 1.35vw, 17px); font-weight: 300; }
   .hero-sub b { color: var(--text); font-weight: 500; }
   .cta-row { display: flex; gap: 14px; margin-top: 24px; flex-wrap: wrap; }
+  @media (max-width: 560px) {
+    .cta-row { flex-direction: column; align-items: stretch; gap: 10px; margin-top: 20px; }
+    .cta-row .btn { width: 100%; padding-inline: 20px; }
+  }
   .hero-meta { margin-top: 16px; font-size: 13px; color: var(--dim); }
   .hero-meta em { font-style: normal; color: var(--terra); margin-inline: 8px; }
 
@@ -151,7 +167,7 @@
   .ticket::before, .ticket::after { content: ''; position: absolute; top: 50%; width: 18px; height: 18px;
     border-radius: 50%; background: var(--bg); translate: 0 -50%; }
   .ticket::before { left: -9px; } .ticket::after { right: -9px; }
-  @media (max-width: 900px) { .ticket { justify-self: start; rotate: -1deg; } }
+  @media (max-width: 900px) { .ticket { justify-self: stretch; width: 100%; min-width: 0; rotate: -1deg; } }
   .ticket .lab { display: flex; align-items: center; gap: 8px; font-size: 11.5px; font-weight: 600;
     letter-spacing: .16em; text-transform: uppercase; color: var(--ink-soft); }
   .ticket .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--terra); display: inline-block; }
@@ -164,8 +180,9 @@
   /* line-drawn cup + steam */
   .cup-art { position: absolute; right: clamp(18px, 5vw, 120px); bottom: clamp(180px, 26vh, 300px);
     width: clamp(200px, 23vw, 400px); cursor: pointer; opacity: .92; }
-  @media (max-width: 900px) { .cup-art { width: clamp(112px, 24vw, 170px); right: 14px;
-    bottom: auto; top: 168px; opacity: .85; } }
+  /* on small screens the cup joins the flow instead of floating over the headline */
+  @media (max-width: 900px) { .cup-art { position: static; display: block; opacity: .88;
+    width: clamp(96px, 25vw, 150px); margin: 8px 2px -6px auto; } }
   .cup-art path { fill: none; stroke: var(--text); stroke-width: 2.5; stroke-linecap: round; }
   .cup-art .steam { stroke: var(--caramel); stroke-width: 2.2; }
 
@@ -368,7 +385,7 @@
 
 <nav id="nav" data-hui>
   <div class="wrap">
-    <a class="logo" href="#top">ember<i id="logo-star">✳</i><small>roastery · est. 2024</small></a>
+    <a class="logo" href="#top">ember<i id="logo-bean" aria-hidden="true"><svg viewBox="0 0 32 32"><ellipse class="body" cx="16" cy="16" rx="9.2" ry="12.6"/><path class="crease" d="M16 4.4C11.2 9.9 20.8 16.1 16 27.6"/></svg></i><small>roastery · est. 2024</small></a>
     <div class="nav-links">
       <a href="#journey">The journey</a>
       <a href="#how">How it works</a>
@@ -612,7 +629,7 @@
     <p class="foot-note" data-reveal>Skip, pause, or cancel anytime. Free shipping, always.</p>
   </div>
   <div class="wrap foot-bar">
-    <a class="logo" href="#top" style="font-size:17px">ember<i>✳</i></a>
+    <a class="logo" href="#top" style="font-size:17px">ember<i aria-hidden="true"><svg viewBox="0 0 32 32"><ellipse class="body" cx="16" cy="16" rx="9.2" ry="12.6"/><path class="crease" d="M16 4.4C11.2 9.9 20.8 16.1 16 27.6"/></svg></i></a>
     <div class="links">
       <a href="#journey">The journey</a><a href="#how">How it works</a><a href="#words">Kind words</a>
     </div>
@@ -859,7 +876,7 @@ if (!window.anime) {
     const beanTumble2 = animate('.drum .b2', { x: [10, -12], y: [-6, 10], rotate: ['30deg', '-45deg'],
       duration: 1350, ease: 'inOutSine', alternate: true, loop: true });
     const marquee = animate('#track', { x: '-50%', duration: 32000, ease: 'linear', loop: true });
-    const logoStar = animate('#logo-star', { rotate: '360deg', duration: 16000, ease: 'linear', loop: true });
+    const logoBean = animate('#logo-bean', { rotate: '360deg', duration: 14000, ease: 'linear', loop: true });
     const pulse = animate('#pulse-dot', { opacity: [1, 0.3], duration: 850, ease: 'inOutSine', alternate: true, loop: true });
 
     /* demo loops registry — bag hop is rebuilt on resize, so its slot is mutable */
