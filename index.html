@@ -128,24 +128,24 @@
 
   /* display headings use the hand font — Caveat has no italic face, so no font-style here
      (a synthesised oblique on a script face reads as a rendering bug) */
+  /* line-height MUST stay ≥ ~1.1 here. iOS Safari composites each animated letter (will-change:
+     transform) and rasterises it clipped to its own line box; a sub-1 line-height makes that box
+     shorter than the glyph, so tall letters (f k t h b d) had their tops sliced on-device — a clip
+     desktop Blink and headless WebKit never showed. 1.15 fully contains the ascenders; the tight
+     visual stacking is then restored by the negative margin-block on .krow below. */
   .kinetic { font-family: var(--hand); font-weight: 600;
-    line-height: .78; letter-spacing: 0; user-select: none; margin-block: 14px 8px; }
-  /* The entrance drops each letter in from below, so the row only needs a mask UNDER its box.
-     overflow:hidden masked all four sides, and with line-height:.78 the top edge sits barely
-     above the tallest ascenders (f k b h) — Safari derives the line box from different vertical
-     font metrics than Blink, so on iOS that margin went negative and sliced the tops off.
-     clip-path with negative insets masks the bottom ONLY, so glyph ink can never be cut. */
+    line-height: 1.15; letter-spacing: 0; user-select: none; margin-block: 14px 8px; }
   /* the outer min() is a hard viewport-relative ceiling. The rem floor below it grows with the
      browser/OS text-scaling setting while vw does not, so without the cap a phone at 130%+ text
-     size pushes this nowrap row past the screen edge */
+     size pushes this nowrap row past the screen edge.
+     clip-path masks ONLY the bottom (top & sides open at -50%) so the letter-drop entrance still
+     reveals from below while no engine can ever clip an ascender; margin-block cancels the extra
+     line-height back out of the layout so row spacing is unchanged. */
   .krow { display: block; white-space: nowrap;
     font-size: min(15vw, clamp(3.4rem, min(14.5vw, 15.5svh), 13rem));
     will-change: transform; width: fit-content;
-    clip-path: inset(-100% -100% 0);
-    /* padding sets where the bottom mask falls; the negative margin cancels it out of the
-       layout, so the deeper mask costs no vertical rhythm. Deep enough that descenders clear
-       it at rest and letters stay hidden before they slide up, on either engine's metrics. */
-    padding: .06em .16em .45em .08em; margin: 0 -.16em -.39em -.08em; }
+    clip-path: inset(-50% -50% 0 -50%);
+    margin-block: 0 -0.255em; }
   .krow .ch { display: inline-block; }
   .krow .poke { cursor: pointer; }
   .krow-2 { color: transparent; -webkit-text-stroke: 1.5px var(--text); margin-left: clamp(22px, 6vw, 130px); }
@@ -375,8 +375,9 @@
   footer { border-top: 1px solid var(--line); position: relative; overflow: hidden; }
   .foot-cta { text-align: center; padding-block: var(--sec-pad); position: relative; }
   .foot-kinetic { font-family: var(--hand); font-weight: 600;
-    line-height: 1.02; letter-spacing: 0; }
-  .foot-kinetic .krow { margin-inline: auto; font-size: min(15vw, clamp(3.5rem, 12vw, 10.8rem)); }
+    line-height: 1.2; letter-spacing: 0; }   /* was 1.02 — see .kinetic note; contains ascenders on iOS */
+  .foot-kinetic .krow { margin-inline: auto; margin-block: 0 -0.057em;
+    font-size: min(15vw, clamp(3.5rem, 12vw, 10.8rem)); }
   .foot-kinetic .krow-2 { margin-left: auto; color: var(--caramel); -webkit-text-stroke: 0; }
   .foot-cta .cta-row { justify-content: center; margin-top: 34px; }
   .foot-bar { border-top: 1px solid var(--line); padding-block: 24px; display: flex; align-items: center;
