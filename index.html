@@ -128,23 +128,21 @@
 
   /* display headings use the hand font — Caveat has no italic face, so no font-style here
      (a synthesised oblique on a script face reads as a rendering bug) */
-  /* line-height MUST stay ≥ ~1.1 here. iOS Safari composites each animated letter (will-change:
-     transform) and rasterises it clipped to its own line box; a sub-1 line-height makes that box
-     shorter than the glyph, so tall letters (f k t h b d) had their tops sliced on-device — a clip
-     desktop Blink and headless WebKit never showed. 1.15 fully contains the ascenders; the tight
-     visual stacking is then restored by the negative margin-block on .krow below. */
+  /* Root cause of the on-device clip (verified with a per-variant test on real iOS Safari):
+     the JS split each letter into its own inline-block span AND left will-change:transform on it,
+     so iOS kept every tiny glyph on its own GPU layer and rasterised it clipped to the layer box,
+     slicing the tops of tall letters. Plain text and non-composited split spans render whole, so
+     the JS now clears each letter's transform/will-change at rest (never composited when static).
+     line-height 1.15 gives the type breathing room; margin-block restores the tight row spacing. */
   .kinetic { font-family: var(--hand); font-weight: 600;
     line-height: 1.15; letter-spacing: 0; user-select: none; margin-block: 14px 8px; }
   /* the outer min() is a hard viewport-relative ceiling. The rem floor below it grows with the
      browser/OS text-scaling setting while vw does not, so without the cap a phone at 130%+ text
-     size pushes this nowrap row past the screen edge.
-     clip-path masks ONLY the bottom (top & sides open at -50%) so the letter-drop entrance still
-     reveals from below while no engine can ever clip an ascender; margin-block cancels the extra
-     line-height back out of the layout so row spacing is unchanged. */
+     size pushes this nowrap row past the screen edge. The whole ROW may safely be a transform
+     layer (used by the scroll-shear); only per-LETTER layers were the problem. */
   .krow { display: block; white-space: nowrap;
     font-size: min(15vw, clamp(3.4rem, min(14.5vw, 15.5svh), 13rem));
     will-change: transform; width: fit-content;
-    clip-path: inset(-50% -50% 0 -50%);
     margin-block: 0 -0.255em; }
   .krow .ch { display: inline-block; }
   .krow .poke { cursor: pointer; }
@@ -727,8 +725,12 @@ if (!window.anime) {
   const splitReady = document.fonts.ready.then(() => {
     utils.$('#kinetic .krow').forEach(row => heroChars.push(splitText(row, { chars: true }).chars));
     utils.$('#foot-kinetic .krow').forEach(row => footChars.push(splitText(row, { chars: true }).chars));
-    heroChars.flat().concat(footChars.flat()).forEach(c => { c.style.display = 'inline-block'; c.style.willChange = 'transform'; });
+    heroChars.flat().concat(footChars.flat()).forEach(c => { c.style.display = 'inline-block'; });
   });
+  /* iOS Safari clips a composited single-glyph span to its layer box. Keep letters OFF the GPU
+     when static: clear the inline transform/will-change the moment their motion settles, so at
+     rest each letter is a plain span (renders whole on every engine). */
+  const decompose = els => els.forEach(c => { c.style.transform = ''; c.style.willChange = ''; });
 
   /* ================================================================ */
   createScope({ mediaQueries: { reduceMotion: '(prefers-reduced-motion)' } }).add(self => {
@@ -750,9 +752,10 @@ if (!window.anime) {
     splitReady.then(() => {
       utils.set('#kinetic', { visibility: 'visible' });
       heroChars.forEach((chars, r) => {
-        utils.set(chars, { y: '115%' });
-        animate(chars, { y: '0%', duration: 850, ease: 'outExpo',
-          delay: stagger(26, { start: 80 + r * 110, from: r === 1 ? 'last' : 'first' }) });
+        utils.set(chars, { y: '115%', opacity: 0 });
+        animate(chars, { y: '0%', opacity: 1, duration: 850, ease: 'outExpo',
+          delay: stagger(26, { start: 80 + r * 110, from: r === 1 ? 'last' : 'first' }),
+          onComplete: () => decompose(chars) });
       });
       animate('.hero [data-hui]', { y: [16, 0], opacity: [0, 1], duration: 560, ease: 'out(3)',
         delay: stagger(90, { start: 420 }) });
@@ -764,7 +767,8 @@ if (!window.anime) {
         const springUp = () => {
           if (rmQuery.matches) return;
           animate(ch, { y: [{ to: '-16%', duration: 130, ease: 'out(2)' },
-                            { to: '0%', duration: 640, ease: 'outElastic(1, .36)' }] });
+                            { to: '0%', duration: 640, ease: 'outElastic(1, .36)' }],
+            onComplete: () => decompose([ch]) });
         };
         ch.addEventListener('pointerenter', springUp);
         ch.addEventListener('pointerdown', springUp);
@@ -775,10 +779,11 @@ if (!window.anime) {
       /* footer kinetic — same grammar, once on approach */
       utils.set('#foot-kinetic', { visibility: 'visible' });
       footChars.forEach((chars, r) => {
-        utils.set(chars, { y: '115%' });
-        animate(chars, { y: '0%', duration: 800, ease: 'outExpo',
+        utils.set(chars, { y: '115%', opacity: 0 });
+        animate(chars, { y: '0%', opacity: 1, duration: 800, ease: 'outExpo',
           delay: stagger(22, { start: r * 120, from: r ? 'last' : 'first' }),
-          autoplay: onScroll({ target: '.foot-cta', enter: '82% top', sync: 'play' }) });
+          autoplay: onScroll({ target: '.foot-cta', enter: '82% top', sync: 'play' }),
+          onComplete: () => decompose(chars) });
       });
     });
 
