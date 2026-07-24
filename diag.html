@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Heading clip diagnostic</title>
+<title>Heading clip diagnostic 2</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400..600&display=swap" rel="stylesheet">
@@ -11,60 +11,55 @@
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body { background: #241a12; color: #F5ECDC; font-family: system-ui, sans-serif; padding: 14px 10px 60px; }
   h1 { font-size: 16px; font-weight: 600; margin-bottom: 6px; color: #E0A458; }
-  p.note { font-size: 12px; color: #B7A68F; margin-bottom: 18px; line-height: 1.4; }
+  p.note { font-size: 12px; color: #B7A68F; margin-bottom: 8px; line-height: 1.4; }
   .case { border-top: 1px solid rgba(255,255,255,.14); padding-top: 8px; margin-top: 16px; }
-  .lab { font-size: 12px; font-weight: 700; color: #D96C47; letter-spacing: .04em; }
-  .lab small { color: #8A7B67; font-weight: 400; letter-spacing: 0; }
+  .lab { font-size: 12.5px; font-weight: 700; color: #D96C47; }
+  .lab small { color: #8A7B67; font-weight: 400; }
   .head { font-family: 'Caveat', cursive; font-weight: 600; color: #F5ECDC;
-    white-space: nowrap; font-size: 13vw; width: fit-content; margin-top: 2px; }
+    white-space: nowrap; font-size: 13vw; width: fit-content; margin-top: 2px; line-height: 1.15; }
   .ch { display: inline-block; }
-  .wc .ch { will-change: transform; transform: translateZ(0); }   /* force the composited layer iOS uses */
 
-  /* variant styles */
-  .v-plain-tall  { line-height: 1.15; }
-  .v-plain-tight { line-height: .78; }
-  .v-clip   { line-height: 1.15; clip-path: inset(-50% -50% 0 -50%); }
-  .v-ovh    { line-height: 1.15; overflow: hidden; padding: .42em .28em 0 .28em; margin: 0 -.28em 0 -.28em; }
-  .v-tight-ovh { line-height: .78; overflow: hidden; padding: .06em .16em .3em .08em; margin: 0 -.16em -.24em -.08em; }
+  /* G: whole ROW composited via transform (per-row slide animation candidate) */
+  .v-rowcomp { transform: translateY(0); will-change: transform; }
+  /* I: whole ROW composited via opacity only (fade candidate) */
+  .v-opacity { opacity: .999; will-change: opacity; }
 </style>
 </head>
 <body>
-  <h1>Heading clip diagnostic</h1>
-  <p class="note">Take ONE screenshot of this whole page (scroll through if needed) and send it.
-    For each block below, I need to know: are the tops of the tall letters (f, k, t, g) cut off, or whole?</p>
+  <h1>Diagnostic 2 — choosing the animation method</h1>
+  <p class="note">One screenshot again please. For each block: are the tall letter tops (f, k, t) CUT or WHOLE?</p>
 
-  <div class="case"><div class="lab">A <small>plain text · line-height 1.15 · no split</small></div>
-    <div class="head v-plain-tall">coffee waking for.</div></div>
+  <div class="case"><div class="lab">A <small>· plain text, no split, no transform (known-good control)</small></div>
+    <div class="head">coffee waking for.</div></div>
 
-  <div class="case"><div class="lab">B <small>plain text · line-height .78 · no split</small></div>
-    <div class="head v-plain-tight">coffee waking for.</div></div>
+  <div class="case"><div class="lab">C <small>· split into per-letter composited spans (known-bad control)</small></div>
+    <div class="head split-comp">coffee waking for.</div></div>
 
-  <div class="case"><div class="lab">C <small>split spans · composited · line-height 1.15 · no clip</small></div>
-    <div class="head v-plain-tall wc split">coffee waking for.</div></div>
+  <div class="case"><div class="lab">G <small>· WHOLE line, no split, composited with transform</small></div>
+    <div class="head v-rowcomp">coffee waking for.</div></div>
 
-  <div class="case"><div class="lab">D <small>split · composited · line-height 1.15 · clip-path (CURRENT LIVE)</small></div>
-    <div class="head v-clip wc split">coffee waking for.</div></div>
+  <div class="case"><div class="lab">H <small>· split into per-letter spans, NOT composited (no will-change)</small></div>
+    <div class="head split-plain">coffee waking for.</div></div>
 
-  <div class="case"><div class="lab">E <small>split · composited · line-height 1.15 · overflow:hidden + top pad</small></div>
-    <div class="head v-ovh wc split">coffee waking for.</div></div>
-
-  <div class="case"><div class="lab">F <small>split · composited · ORIGINAL line-height .78 · overflow:hidden</small></div>
-    <div class="head v-tight-ovh wc split">coffee waking for.</div></div>
+  <div class="case"><div class="lab">I <small>· WHOLE line, no split, composited with opacity</small></div>
+    <div class="head v-opacity">coffee waking for.</div></div>
 
 <script>
-  // Split every .split heading into per-character inline-block spans (mimics anime.js splitText)
   document.fonts.ready.then(() => {
-    document.querySelectorAll('.head.split').forEach(el => {
-      const text = el.textContent;
-      el.textContent = '';
-      for (const c of text) {
-        const s = document.createElement('span');
-        s.className = 'ch';
-        s.textContent = c === ' ' ? ' ' : c;
-        el.appendChild(s);
-      }
-    });
+    // C: split + composite (reproduces the live bug)
+    document.querySelectorAll('.split-comp').forEach(el => splitInto(el, true));
+    // H: split but do NOT composite
+    document.querySelectorAll('.split-plain').forEach(el => splitInto(el, false));
   });
+  function splitInto(el, composite) {
+    const text = el.textContent; el.textContent = '';
+    for (const c of text) {
+      const s = document.createElement('span');
+      s.className = 'ch'; s.textContent = c === ' ' ? ' ' : c;
+      if (composite) { s.style.willChange = 'transform'; s.style.transform = 'translateZ(0)'; }
+      el.appendChild(s);
+    }
+  }
 </script>
 </body>
 </html>
