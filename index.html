@@ -130,15 +130,22 @@
      (a synthesised oblique on a script face reads as a rendering bug) */
   .kinetic { font-family: var(--hand); font-weight: 600;
     line-height: .78; letter-spacing: 0; user-select: none; margin-block: 14px 8px; }
-  /* script glyphs overshoot their advance width — pad the row so the reveal mask
-     (overflow:hidden) doesn't shear off the last letter, then pull it back with margin */
+  /* The entrance drops each letter in from below, so the row only needs a mask UNDER its box.
+     overflow:hidden masked all four sides, and with line-height:.78 the top edge sits barely
+     above the tallest ascenders (f k b h) — Safari derives the line box from different vertical
+     font metrics than Blink, so on iOS that margin went negative and sliced the tops off.
+     clip-path with negative insets masks the bottom ONLY, so glyph ink can never be cut. */
   /* the outer min() is a hard viewport-relative ceiling. The rem floor below it grows with the
      browser/OS text-scaling setting while vw does not, so without the cap a phone at 130%+ text
-     size pushed this nowrap row off the right edge, where overflow:hidden shaved the last letters */
-  .krow { display: block; overflow: hidden; white-space: nowrap;
+     size pushes this nowrap row past the screen edge */
+  .krow { display: block; white-space: nowrap;
     font-size: min(15vw, clamp(3.4rem, min(14.5vw, 15.5svh), 13rem));
-    will-change: transform; width: fit-content; max-width: 100%;
-    padding: .06em .16em .3em .08em; margin: 0 -.16em -.24em -.08em; }
+    will-change: transform; width: fit-content;
+    clip-path: inset(-100% -100% 0);
+    /* padding sets where the bottom mask falls; the negative margin cancels it out of the
+       layout, so the deeper mask costs no vertical rhythm. Deep enough that descenders clear
+       it at rest and letters stay hidden before they slide up, on either engine's metrics. */
+    padding: .06em .16em .45em .08em; margin: 0 -.16em -.39em -.08em; }
   .krow .ch { display: inline-block; }
   .krow .poke { cursor: pointer; }
   .krow-2 { color: transparent; -webkit-text-stroke: 1.5px var(--text); margin-left: clamp(22px, 6vw, 130px); }
