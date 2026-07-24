@@ -132,9 +132,12 @@
     line-height: .78; letter-spacing: 0; user-select: none; margin-block: 14px 8px; }
   /* script glyphs overshoot their advance width — pad the row so the reveal mask
      (overflow:hidden) doesn't shear off the last letter, then pull it back with margin */
+  /* the outer min() is a hard viewport-relative ceiling. The rem floor below it grows with the
+     browser/OS text-scaling setting while vw does not, so without the cap a phone at 130%+ text
+     size pushed this nowrap row off the right edge, where overflow:hidden shaved the last letters */
   .krow { display: block; overflow: hidden; white-space: nowrap;
-    font-size: clamp(3.4rem, min(14.5vw, 15.5svh), 13rem);
-    will-change: transform; width: fit-content;
+    font-size: min(15vw, clamp(3.4rem, min(14.5vw, 15.5svh), 13rem));
+    will-change: transform; width: fit-content; max-width: 100%;
     padding: .06em .16em .3em .08em; margin: 0 -.16em -.24em -.08em; }
   .krow .ch { display: inline-block; }
   .krow .poke { cursor: pointer; }
@@ -366,7 +369,7 @@
   .foot-cta { text-align: center; padding-block: var(--sec-pad); position: relative; }
   .foot-kinetic { font-family: var(--hand); font-weight: 600;
     line-height: 1.02; letter-spacing: 0; }
-  .foot-kinetic .krow { margin-inline: auto; font-size: clamp(3.5rem, 12vw, 10.8rem); }
+  .foot-kinetic .krow { margin-inline: auto; font-size: min(15vw, clamp(3.5rem, 12vw, 10.8rem)); }
   .foot-kinetic .krow-2 { margin-left: auto; color: var(--caramel); -webkit-text-stroke: 0; }
   .foot-cta .cta-row { justify-content: center; margin-top: 34px; }
   .foot-bar { border-top: 1px solid var(--line); padding-block: 24px; display: flex; align-items: center;
