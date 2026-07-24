@@ -729,8 +729,10 @@ if (!window.anime) {
   });
   /* iOS Safari clips a composited single-glyph span to its layer box. Keep letters OFF the GPU
      when static: clear the inline transform/will-change the moment their motion settles, so at
-     rest each letter is a plain span (renders whole on every engine). */
-  const decompose = els => els.forEach(c => { c.style.transform = ''; c.style.willChange = ''; });
+     rest each letter is a plain span (renders whole on every engine). Clearing transform AND
+     opacity also doubles as the rest state — so this alone lands a letter at y:0, fully visible,
+     non-composited, even if its entrance never completed (e.g. a throttled background tab). */
+  const decompose = els => els.forEach(c => { c.style.transform = ''; c.style.willChange = ''; c.style.opacity = ''; });
 
   /* ================================================================ */
   createScope({ mediaQueries: { reduceMotion: '(prefers-reduced-motion)' } }).add(self => {
@@ -757,6 +759,9 @@ if (!window.anime) {
           delay: stagger(26, { start: 80 + r * 110, from: r === 1 ? 'last' : 'first' }),
           onComplete: () => decompose(chars) });
       });
+      /* safety net: guarantee the hero letters reach a plain, visible, non-composited rest state
+         even if the entrance never fires onComplete (throttled tab, interrupted load) */
+      setTimeout(() => decompose(heroChars.flat()), 2600);
       animate('.hero [data-hui]', { y: [16, 0], opacity: [0, 1], duration: 560, ease: 'out(3)',
         delay: stagger(90, { start: 420 }) });
       animate('#nav', { y: [-12, 0], opacity: [0, 1], duration: 560, ease: 'out(3)', delay: 600 });
